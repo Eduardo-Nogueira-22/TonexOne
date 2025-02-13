@@ -85,15 +85,15 @@ enum TonexParameters
     TONEX_PARAM_EQ_TREBLE,
     TONEX_PARAM_EQ_TREBLE_FREQ,
     
-    //Model and VIR params
-    TONEX_PARAM_UNKNOWN_1,
-    TONEX_PARAM_UNKNOWN_2,
+    //Model and VIR params. TONEX_PARAM_PRESENCE and TONEX_PARAM_DEPTH location  is unknown!
+    TONEX_PARAM_MODEL_AMP_ENABLE,
+    TONEX_PARAM_MODEL_SW1,      // results in silence, unknown function
     TONEX_PARAM_MODEL_GAIN,
     TONEX_PARAM_MODEL_VOLUME,
     TONEX_PARAM_MODEX_MIX,
-    TONEX_PARAM_UNKNOWN_3,
-    TONEX_PARAM_PRESENCE,
-    TONEX_PARAM_DEPTH,
+    TONEX_PARAM_MODEL_SW2,          // no audible difference
+    TONEX_PARAM_MODEL_CABINET,      // cabinet model or enable, unknown
+    TONEX_PARAM_VIR_CABINET_MODEL,
     TONEX_PARAM_VIR_RESO,
     TONEX_PARAM_VIR_MIC_1,
     TONEX_PARAM_VIR_MIC_1_X,

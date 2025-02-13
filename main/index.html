@@ -78,7 +78,7 @@
           background-color: #2A2A2A;
           width: 15%;
           min-width: 70px;
-          height: 740px;
+          height: 640px;
         }
 
         /* Style the buttons inside the tab */
@@ -86,14 +86,14 @@
           display: block;
           background-color: inherit;
           color: #C0C0C0;
-          padding: 22px 16px;
+          padding: 17px 10px;
           width: 100%;
           border: none;
           outline: none;
           text-align: left;
           cursor: pointer;
           transition: 0.3s;
-          font-size: 16px;
+          font-size: 18px;
         }
 
         /* Change background color of buttons on hover */
@@ -258,15 +258,15 @@
         const TONEX_PARAM_EQ_TREBLE = 16;
         const TONEX_PARAM_EQ_TREBLE_FREQ = 17;
         
-        //Model and VIR params
-        const TONEX_PARAM_UNKNOWN_1 = 18;
-        const TONEX_PARAM_UNKNOWN_2 = 19;
+        //Model and VIR params      TONEX_PARAM_PRESENCE, TONEX_PARAM_DEPTH unknown!
+        const TONEX_PARAM_MODEL_AMP_ENABLE = 18;  
+        const TONEX_PARAM_MODEL_SW1 = 19;
         const TONEX_PARAM_MODEL_GAIN = 20;
         const TONEX_PARAM_MODEL_VOLUME = 21;
         const TONEX_PARAM_MODEX_MIX = 22;
-        const TONEX_PARAM_UNKNOWN_3 = 23;
-        const TONEX_PARAM_PRESENCE = 24;
-        const TONEX_PARAM_DEPTH = 25;
+        const TONEX_PARAM_MODEL_SW2 = 23;
+        const TONEX_PARAM_MODEL_CABINET = 24;
+        const TONEX_PARAM_VIR_CABINET_MODEL = 25;
         const TONEX_PARAM_VIR_RESO = 26;
         const TONEX_PARAM_VIR_MIC_1 = 27;
         const TONEX_PARAM_VIR_MIC_1_X = 28;
@@ -588,10 +588,12 @@
                                 break;
                             
                             //Model and VIR params
-                            case TONEX_PARAM_UNKNOWN_1:
+                            case TONEX_PARAM_MODEL_AMP_ENABLE:
+                                configureParamSwitch("am_ampen", value);
+                                setParamData("am_ampen", parseInt(key));
                                 break;
 
-                            case TONEX_PARAM_UNKNOWN_2:
+                            case TONEX_PARAM_MODEL_SW1:
                                 break;
 
                             case TONEX_PARAM_MODEL_GAIN:
@@ -609,17 +611,25 @@
                                 setParamData("am_mix", parseInt(key));                            
                                 break;
 
-                            case TONEX_PARAM_UNKNOWN_3:
+                            //case TONEX_PARAM_PRESENCE:
+                            //    configureParamRange("am_presence", value, min, max);
+                            //    setParamData("am_presence", parseInt(key));
+                            //    break;
+
+                            case TONEX_PARAM_MODEL_SW2:
+                                break;                            
+
+                            case TONEX_PARAM_MODEL_CABINET:
+                                configureParamSwitch("am_caben", value);
+                                setParamData("am_caben", parseInt(key));
                                 break;
 
-                            case TONEX_PARAM_PRESENCE:
-                                configureParamRange("am_presence", value, min, max);
-                                setParamData("am_presence", parseInt(key));
-                                break;
+                            //case TONEX_PARAM_DEPTH:
+                            //    configureParamRange("am_depth", value, min, max);
+                            //    setParamData("am_depth", parseInt(key));                            
+                            //    break;
 
-                            case TONEX_PARAM_DEPTH:
-                                configureParamRange("am_depth", value, min, max);
-                                setParamData("am_depth", parseInt(key));                            
+                            case TONEX_PARAM_VIR_CABINET_MODEL:
                                 break;
 
                             case TONEX_PARAM_VIR_RESO:
@@ -660,7 +670,7 @@
 
                             case TONEX_PARAM_REVERB_ENABLE:
                                 configureParamSwitch("rv_enable", value);
-                                setParamData("rv_post", parseInt(key));
+                                setParamData("rv_enable", parseInt(key));
                                 break;
 
                             case TONEX_PARAM_REVERB_MODEL:
@@ -858,6 +868,7 @@
                                     setParamLabel("mo_param3l", "Level");
 
                                     setParamVisible("mo_param4", false);
+                                    setParamVisible("mo_param4l", false);
                                 }
                                 else if (getSelectValue("mo_model") == TONEX_MODULATION_TREMOLO) {
                                     setParamLabel("mo_param1l", "Rate");
@@ -866,12 +877,14 @@
                                     setParamLabel("mo_param4l", "Level");
 
                                     setParamVisible("mo_param4", true);
+                                    setParamVisible("mo_param4l", true);
                                 }
                                 else if (getSelectValue("mo_model") == TONEX_MODULATION_PHASER) {
                                     setParamLabel("mo_param1l", "Rate");
                                     setParamLabel("mo_param2l", "Depth");
                                     setParamLabel("mo_param3l", "Level");
 
+                                    setParamVisible("mo_param4", false);
                                     setParamVisible("mo_param4l", false);
                                 }
                                 else if (getSelectValue("mo_model") == TONEX_MODULATION_FLANGER) {
@@ -880,6 +893,7 @@
                                     setParamLabel("mo_param3l", "Feedback");
                                     setParamLabel("mo_param4l", "Level");
 
+                                    setParamVisible("mo_param4", true);
                                     setParamVisible("mo_param4l", true);
                                 }
                                 else if (getSelectValue("mo_model") == TONEX_MODULATION_ROTARY) {
@@ -888,6 +902,7 @@
                                     setParamLabel("mo_param3l", "Spread");
                                     setParamLabel("mo_param4l", "Level");
 
+                                    setParamVisible("mo_param4", true);
                                     setParamVisible("mo_param4l", true);
                                 }
                                 break;
@@ -1359,8 +1374,10 @@
       <button class="tablinks" onclick="openTab(event, 'Modulation')">Mod</button>
       <button class="tablinks" onclick="openTab(event, 'Delay')">Delay</button>
       <button class="tablinks" onclick="openTab(event, 'Amplifier')">Amp</button>
-      <button class="tablinks" onclick="openTab(event, 'Options')">Opt</button>
-      <button class="tablinks" onclick="openTab(event, 'Settings')">Sett</button>
+      <button class="tablinks" onclick="openTab(event, 'Bluetooth')">BT</button>
+      <button class="tablinks" onclick="openTab(event, 'Midi')">Midi</button>
+      <button class="tablinks" onclick="openTab(event, 'Miscellaneous')">Misc</button>
+      <button class="tablinks" onclick="openTab(event, 'WiFi')">WiFi</button>
     </div>
 
     <div id="NoiseGate" class="tabcontent">
@@ -1677,6 +1694,23 @@
             <h5 class="selected_text">Amplifier</h5>
             <p class="lead">
                 <div class="container">
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" data-index-number="dummy" onchange="onParamChange(event)" type="checkbox" role="switch" value="" id="am_ampen">
+                                <label class="form-check-label" for="am_ampen">Amp</label>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" data-index-number="dummy" onchange="onParamChange(event)" type="checkbox" role="switch" value="" id="am_caben">
+                                <label class="form-check-label" for="am_caben">Cab</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="container">
                     <label for="am_gain" class="form-label">Gain</label>
                     <input type="range" data-index-number="dummy" onchange="onParamChange(event)" class="form-range" id="am_gain">
                 </div>
@@ -1688,6 +1722,8 @@
                     <label for="am_mix" class="form-label">Mix</label>
                     <input type="range" data-index-number="dummy" onchange="onParamChange(event)" class="form-range" id="am_mix">
                 </div>
+            <!-- 
+                unsupported for now
                 <div class="container">
                     <label for="am_presence" class="form-label">Presence</label>
                     <input type="range" data-index-number="dummy" onchange="onParamChange(event)" class="form-range" id="am_presence">
@@ -1696,13 +1732,14 @@
                     <label for="am_depth" class="form-label">Depth</label>
                     <input type="range" data-index-number="dummy" onchange="onParamChange(event)" class="form-range" id="am_depth">
                 </div>
+            -->
             </p>
         </div>
     </div>
     
-    <div id="Options" class="tabcontent">
+    <div id="Bluetooth" class="tabcontent">
         <div class="col py-3 text-white">
-            <h5 class="selected_text">Options</h5>
+            <h5 class="selected_text">Bluetooth</h5>
             <p class="lead">
                 <div class="container">
                     <label for="btmode" class="style3 style2">Bluetooth Mode</label>
@@ -1719,6 +1756,7 @@
                        <label class="form-check-label" for="mvavechoc">Chocolate Series</label>
                     </div>                            
                 </div>
+                <br>
                 <div class="container">
                     <div class="form-check form-switch">
                        <input class="form-check-input" type="checkbox" role="switch" value="on" id="xvivemd1" checked>
@@ -1726,15 +1764,18 @@
                     </div> 
                 </div>
                 <br>
+                <br>
                 <div class="container">
                     <div class="form-check form-switch">
                        <input class="form-check-input" type="checkbox" role="switch" value="on" id="custombte">
                        <label class="form-check-label" for="custombte">Custom BT Device</label>
                     </div> 
                 </div>
+                <br>
                 <div class="container">
                     <input type="text" id="custombt" name="custombt" class="form-control text_entry_style" maxlength="24" size="24" value="Enter Name">
                 </div>
+                <br>
                 <br>
                 <div class="container">
                     <div class="form-check form-switch">
@@ -1743,12 +1784,25 @@
                     </div> 
                 </div>
                 <br>
+                <br>
+                <div class="container">
+                    <button type="button" onclick="saveSettings()" class="btn btn-success">Save and Reboot</button>
+                </div>
+            </p>
+        </div>
+    </div>
+                
+    <div id="Midi" class="tabcontent">
+        <div class="col py-3 text-white">
+            <h5 class="selected_text">Midi</h5>
+            <p class="lead">             
                 <div class="container">
                     <div class="form-check form-switch">
                        <input class="form-check-input" type="checkbox" role="switch" value="on" id="midienabled">
                        <label class="form-check-label" for="midienabled">Wired Midi</label>
                     </div> 
                 </div>
+                <br>
                 <div class="container">
                     <label class="form-check-label" for="midichannel">Midi Channel</label>
                     <select class="form-select select_style" id="midichannel">
@@ -1769,8 +1823,20 @@
                       <option value="15">15</option>
                       <option value="16">16</option>
                     </select>  
-                </div>                    
+                </div>
                 <br>
+                <br>
+                <div class="container">
+                    <button type="button" onclick="saveSettings()" class="btn btn-success">Save and Reboot</button>
+                </div>                
+            </p>
+        </div>
+    </div>
+                
+    <div id="Miscellaneous" class="tabcontent">
+        <div class="col py-3 text-white">
+        <h5 class="selected_text">Miscellaneous</h5>
+            <p class="lead">                         
                 <div class="container">
                     <div class="form-check form-switch">
                        <input class="form-check-input" type="checkbox" role="switch" value="on" id="togglebypass">
@@ -1795,6 +1861,7 @@
                     </select>                           
                 </div>
                 <br>
+                <br>
                 <div class="container">
                     <button type="button" onclick="saveSettings()" class="btn btn-success">Save and Reboot</button>
                 </div>
@@ -1802,9 +1869,9 @@
         </div>
     </div>
     
-    <div id="Settings" class="tabcontent">
+    <div id="WiFi" class="tabcontent">
         <div class="col py-3 text-white">
-            <h5 class="selected_text">Settings</h5>
+            <h5 class="selected_text">WiFi</h5>
             <p class="lead">
                 <div class="container">
                     <label class="form-check-label" for="wifimode">WiFi Mode</label>
@@ -1828,6 +1895,7 @@
                     <label class="form-check-label" for="wifipassword">WiFi Password</label>
                     <input type="password" id="wifipassword" name="wifipassword" class="form-control text_entry_style" maxlength="40" size="40" value="WiFi Password">
                 </div>
+                <br>
                 <br>
                 <div class="container">
                     <button type="button" onclick="SaveWifi()" class="btn btn-success">Save and Reboot</button>

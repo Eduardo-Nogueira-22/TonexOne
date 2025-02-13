@@ -553,6 +553,11 @@ static esp_err_t ws_handler(httpd_req_t *req)
                             control_set_config_toggle_bypass(int_val);
                         }
                         
+                        if (json_obj_get_int(&pWebConfig->jctx, "BT_MODE", &int_val) == OS_SUCCESS)
+                        {
+                            control_set_config_btmode(int_val);
+                        }
+
                         if (json_obj_get_int(&pWebConfig->jctx, "BT_CHOC_EN", &int_val) == OS_SUCCESS)
                         {
                             control_set_config_mv_choc_enable(int_val);

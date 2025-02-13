@@ -63,19 +63,21 @@ static tTonexParameter TonexParameters[TONEX_PARAM_LAST] =
     {300,    75,     600,  "EQ BFREQ"},            // TONEX_PARAM_EQ_BASS_FREQ,
     {5,      0,      10,   "EQ MID"},              // TONEX_PARAM_EQ_MID,
     {0.7,    0.2,    3.0,  "EQ MIDQ"},             // TONEX_PARAM_EQ_MIDQ,
-    {750,    150,    500,  "EQ MFREQ"},            // TONEX_PARAM_EQ_MID_FREQ,
+    {750,    150,    5000, "EQ MFREQ"},            // TONEX_PARAM_EQ_MID_FREQ,
     {5,      0,      10,   "EQ TREBLE"},           // TONEX_PARAM_EQ_TREBLE,
     {1900,   1000,   4000, "EQ TFREQ"},            // TONEX_PARAM_EQ_TREBLE_FREQ,
     
-    // Model and VIR
-    {0,      0,      1,    "UNK 1"},              // TONEX_PARAM_UNKNOWN_1,
-    {0,      0,      1,    "UNK 2"},              // TONEX_PARAM_UNKNOWN_2,
+    // Amplifier Model
+    {1,      0,      1,    "MDL AMP"},            // TONEX_PARAM_MODEL_AMP_ENABLE,
+    {0,      0,      1,    "MDL SW1"},            // TONEX_PARAM_MODEL_SW1,
     {5,      0,      10,   "MDL GAIN"},           // TONEX_PARAM_MODEL_GAIN,
     {5,      0,      10,   "MDL VOL"},            // TONEX_PARAM_MODEL_VOLUME,
     {100,    0,      100,  "MDL MIX"},            // TONEX_PARAM_MODEX_MIX,
-    {0,      0,      0,    "UNK 3"},              // TONEX_PARAM_UNKNOWN_3,   
-    {5,      0,      10,   "MOD PRES"},           // TONEX_PARAM_PRESENCE,
-    {5,      0,      10,   "MOD DEPTH"},          // TONEX_PARAM_DEPTH,
+    {0,      0,      1,    "MDL SW2"},            // TONEX_PARAM_MODEL_SW2
+    {0,      0,      1,    "MDL CAB"},            // TONEX_PARAM_MODEL_CABINET,
+
+    // Virtual IR Cabinet
+    {5,      0,      10,   "VIR_CMDL"},           // TONEX_PARAM_VIR_CABINET_MODEL,
     {0,      0,      10,   "VIR_RESO"},           // TONEX_PARAM_VIR_RESO,
     {0,      0,      2,    "VIR_M1"},             // TONEX_PARAM_VIR_MIC_1,
     {0,      0,      10,   "VIR_M1X"},            // TONEX_PARAM_VIR_MIC_1_X,
