@@ -59,11 +59,13 @@ limitations under the License.
 #include "control.h"
 #include "wifi_config.h"
 #include "tonex_params.h"
+#include "i2c-lcd.h"
 
 static const char *TAG = "app_TonexOne";
 
 // preset name is proceeded by this byte sequence:
 static const uint8_t ToneOnePresetByteMarker[] = {0xB9, 0x04, 0xB9, 0x02, 0xBC, 0x21};
+
 
 // lengths of preset name and drive character
 #define TONEX_ONE_RESP_OFFSET_PRESET_NAME_LEN       32
@@ -1165,6 +1167,18 @@ static esp_err_t usb_tonex_one_process_single_message(uint8_t* data, uint16_t le
                     
                     // make sure we are showing the correct preset as active                
                     control_sync_preset_details(current_preset, preset_name);
+                    
+                    lcd_put_cur(0, 0);
+                    lcd_send_string("                    ");
+                    lcd_put_cur(0, 0);
+                    lcd_send_string(preset_name);
+                    
+                    char buffer[20];
+                    sprintf(buffer, "Preset = %d", current_preset);
+                    lcd_put_cur(2, 0);
+                    lcd_send_string("Preset =   ");
+                    lcd_put_cur(2, 0);
+                    lcd_send_string(buffer);
 
                     // read the preset params
                     usb_tonex_one_parse_preset_parameters(data, length);

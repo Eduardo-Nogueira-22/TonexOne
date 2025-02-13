@@ -38,8 +38,10 @@ limitations under the License.
 #include "usb/usb_host.h"
 #include "usb_comms.h"
 #include "usb_tonex_one.h"
-#include "leds.h"
+//#include "leds.h"
 #include "midi_helper.h"
+#include "i2c-lcd.h"
+#include "usb_tonex_one.h"
 
 #define FOOTSWITCH_TASK_STACK_SIZE (3 * 1024)
 #define FOOTSWITCH_SAMPLE_COUNT 5 // 20 msec per sample
@@ -200,11 +202,12 @@ static void footswitch_handle_quad_banked(void)
     uint8_t state_dly = 127;
     uint8_t state_comp = 127;
     uint8_t state_mod = 127;
-    // static int8_t LONG_PRESS_TIME = 1000;
+        // static int8_t LONG_PRESS_TIME = 1000;
     // static uint8_t SHORT_PRESS_TIME = 200;
     // static int64_t press_start_time = 0;
     // int64_t press_duration;
 
+   
     // read all 4 switches (and swap so 1 is pressed)
     read_footswitch_input(FOOTSWITCH_1, &value);
     if (value == 0)
@@ -295,10 +298,14 @@ static void footswitch_handle_quad_banked(void)
                 if (state_dly == 0)
                 {
                     state_dly = 127;
+                    lcd_put_cur(1, 0);
+                    lcd_send_string("DLY");
                 }
                 else if (state_dly == 127)
                 {
                     state_dly = 0;
+                    lcd_put_cur(1, 0);
+                    lcd_send_string("   ");
                 }
             }
             else if (binary_val == 0x24) // 3-6
@@ -307,10 +314,14 @@ static void footswitch_handle_quad_banked(void)
                 if (state_mod == 0)
                 {
                     state_mod = 127;
+                    lcd_put_cur(1, 10);
+                    lcd_send_string("MOD");
                 }
                 else if (state_mod == 127)
                 {
                     state_mod = 0;
+                    lcd_put_cur(1, 10);
+                    lcd_send_string("   ");
                 }
             }
                else if (binary_val == 0x12) // 2-5
@@ -319,10 +330,15 @@ static void footswitch_handle_quad_banked(void)
                 if (state_comp == 0)
                 {
                     state_comp = 127;
+                    
+                    lcd_put_cur(1, 4);
+                    lcd_send_string("COMP");
                 }
                 else if (state_comp == 127)
                 {
                     state_comp = 0;
+                    lcd_put_cur(1, 4);
+                    lcd_send_string("    ");
                 }
             }
             else
@@ -366,6 +382,8 @@ static void footswitch_handle_quad_banked(void)
                 // set the preset
                 control_request_preset_index(new_preset);
                 FootswitchControl.index_pending = 0;
+
+               
 
                 // give a little debounce time
                 vTaskDelay(pdMS_TO_TICKS(100));
@@ -518,7 +536,7 @@ void footswitch_task(void *arg)
         }
 
         // handle leds from this task, to save wasting ram on another task for it
-        leds_handle();
+        //leds_handle();
 
         vTaskDelay(pdMS_TO_TICKS(20));
     }
@@ -549,7 +567,7 @@ void footswitches_init(void)
 #endif
 
     // init leds
-    leds_init();
+    //leds_init();
 
     // create task
     xTaskCreatePinnedToCore(footswitch_task, "FOOT", FOOTSWITCH_TASK_STACK_SIZE, NULL, FOOTSWITCH_TASK_PRIORITY, NULL, 1);

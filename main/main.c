@@ -62,7 +62,7 @@ limitations under the License.
 #include "midi_control.h"
 #include "midi_serial.h"
 #include "wifi_config.h"
-#include "leds.h"
+//#include "leds.h"
 #include "tonex_params.h"
 #include "i2c-lcd.h"
 
@@ -134,5 +134,5 @@ void app_main(void)
     // init WiFi config
     wifi_config_init();
 
-    //lcd_function();
+    lcd_function();
 }

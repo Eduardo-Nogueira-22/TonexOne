@@ -140,16 +140,19 @@ void lcd_function(void)
     lcd_init();
     lcd_clear();
 
-   lcd_put_cur(0, 0);
-   lcd_send_string("Hello world!");
+//    lcd_put_cur(0, 0);
+//    lcd_send_string("Hello world!");
 
-   lcd_put_cur(1, 0);
-   lcd_send_string("from ESP32");
+//    lcd_put_cur(1, 0);
+//    lcd_send_string("from ESP32");
 
-    sprintf(buffer, "val=%.2f", num);
-    lcd_put_cur(2, 0);
-    lcd_send_string(buffer);
+    // sprintf(buffer, "val=%.2f", num);
+    // lcd_put_cur(2, 0);
+    // lcd_send_string(buffer);
 
-    lcd_put_cur(3, 0);
-   lcd_send_string("Eduardo");
+   lcd_put_cur(3, 2);
+   lcd_send_string("UP");
+
+   lcd_put_cur(3, 15);
+   lcd_send_string("DOWN");
 }

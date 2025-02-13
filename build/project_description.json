@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "Tonex",
-    "project_version":    "c58e4b1-dirty",
+    "project_version":    "9c67a5b-dirty",
     "project_path":       "C:/Users/Eduardo Nogueira/Tonex",
     "idf_path":           "C:/IDF/v5.3.1/esp-idf",
     "build_dir":          "C:/Users/Eduardo Nogueira/Tonex/build",
@@ -1300,7 +1300,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [ "espressif__esp_lcd_touch_gt911", "espressif__json_generator", "espressif__json_parser", "espressif__mdns", "espressif__usb_host_cdc_acm", "lvgl__lvgl" ],
             "file": "C:/Users/Eduardo Nogueira/Tonex/build/esp-idf/main/libmain.a",
-            "sources": [ "C:/Users/Eduardo Nogueira/Tonex/main/tonex_params.c", "C:/Users/Eduardo Nogueira/Tonex/main/midi_helper.c", "C:/Users/Eduardo Nogueira/Tonex/main/midi_control.c", "C:/Users/Eduardo Nogueira/Tonex/main/control.c", "C:/Users/Eduardo Nogueira/Tonex/main/footswitches.c", "C:/Users/Eduardo Nogueira/Tonex/main/main.c", "C:/Users/Eduardo Nogueira/Tonex/main/usb_comms.c", "C:/Users/Eduardo Nogueira/Tonex/main/usb_tonex_one.c", "C:/Users/Eduardo Nogueira/Tonex/main/midi_serial.c", "C:/Users/Eduardo Nogueira/Tonex/main/wifi_config.c", "C:/Users/Eduardo Nogueira/Tonex/main/leds.c", "C:/Users/Eduardo Nogueira/Tonex/build/index.html.S" ],
+            "sources": [ "C:/Users/Eduardo Nogueira/Tonex/main/tonex_params.c", "C:/Users/Eduardo Nogueira/Tonex/main/midi_helper.c", "C:/Users/Eduardo Nogueira/Tonex/main/midi_control.c", "C:/Users/Eduardo Nogueira/Tonex/main/control.c", "C:/Users/Eduardo Nogueira/Tonex/main/footswitches.c", "C:/Users/Eduardo Nogueira/Tonex/main/main.c", "C:/Users/Eduardo Nogueira/Tonex/main/usb_comms.c", "C:/Users/Eduardo Nogueira/Tonex/main/usb_tonex_one.c", "C:/Users/Eduardo Nogueira/Tonex/main/midi_serial.c", "C:/Users/Eduardo Nogueira/Tonex/main/wifi_config.c", "C:/Users/Eduardo Nogueira/Tonex/main/i2c-lcd.c", "C:/Users/Eduardo Nogueira/Tonex/build/index.html.S" ],
             "include_dirs": [ ".", "./" ]
         },
         "mbedtls": {
