@@ -294,19 +294,7 @@ static void footswitch_handle_quad_banked(void)
             }
             else if (binary_val == 0x09) // 1-4
             {
-                midi_helper_adjust_param_via_midi(2, state_dly);
-                if (state_dly == 0)
-                {
-                    state_dly = 127;
-                    lcd_put_cur(1, 0);
-                    lcd_send_string("DLY");
-                }
-                else if (state_dly == 127)
-                {
-                    state_dly = 0;
-                    lcd_put_cur(1, 0);
-                    lcd_send_string("   ");
-                }
+                midi_helper_adjust_param_via_midi(2, state_dly);               
             }
             else if (binary_val == 0x24) // 3-6
             {

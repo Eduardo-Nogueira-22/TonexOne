@@ -107,6 +107,7 @@ esp_err_t midi_helper_adjust_param_via_midi(uint8_t change_num, uint8_t midi_val
             param = TONEX_PARAM_DELAY_ENABLE;
             value = midi_helper_boolean_midi_to_float(midi_value);
             value = tonex_params_clamp_value(param, value);
+            
         } break;
 
         case 3:

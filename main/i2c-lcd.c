@@ -153,6 +153,6 @@ void lcd_function(void)
    lcd_put_cur(3, 2);
    lcd_send_string("UP");
 
-   lcd_put_cur(3, 15);
+   lcd_put_cur(3, 17);
    lcd_send_string("DOWN");
 }
