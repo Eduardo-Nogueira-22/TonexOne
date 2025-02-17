@@ -3,9 +3,9 @@
 
 # _Tonex ONE_
 
-This project is completely based on the project, only the implementation of the 20x4 LCD display using I2C and the footswitch functions were done.
+This project is completely based on Greg Smith's project (link attached). In the modifications there is the implementation of the 20x4 LCD display using I2C and 6 footswitches were inserted directly, and some combined functions for triggering delay, compressor and modulation.
 
-https://github.com/Builty/TonexOneController/tree/main
+https://github.com/Builty/TonexOneController
 
 
 
@@ -25,11 +25,19 @@ The project is ready to be built using the ESP32-S3 SUPER-MINI. To modify the pl
 
 ![3d Circuit](Files/3d_circuit2.png)
 
+In the link below we have the gerber for making the circuit board.
+
 Gerber: ![Gerber](Files/Gerber_TONEX.zip)
 
 ## Case 3d
 
 ![Case 3D](Files/Case_3d.png)
+
+Below we have the files for printing on a 3D printer. It is important to worry about filling the walls so that there is good mechanical resistance.
+
+![STL Corpo](Files/Corpo.stl)
+
+![STL Tampa](Files/Tampa.stl)
 
 ## Device
 
