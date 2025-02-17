@@ -18,18 +18,18 @@ The project is ready to be built using the ESP32-S3 SUPER-MINI. To modify the pl
 
 ## Circuit Schematics
 
-![Schematics](Schematic_Controlador-TONEX_2025-02-17.png)
+![Schematics](Files/Schematic.png)
 
 ## 3d Circuit
-![3d Circuit](Captura de tela 2025-02-17 100359.png)
+![3d Circuit](Files/3d_Circuit.png)
 
-![3d Circuit](modelo 3d.png)
+![3d Circuit](Files/3d_circuit 2.png)
 
-Gerber: 
+Gerber: (Files/Gerber_TONEX.zip)
 
 ## Case 3d
 
-![Case 3D](modelo3d.png)
+![Case 3D](Files/Case_3d.png)
 
 ## Device
 
