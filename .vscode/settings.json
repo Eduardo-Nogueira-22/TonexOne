@@ -1,14 +1,15 @@
 {
     "C_Cpp.intelliSenseEngine": "default",
-    "idf.espIdfPathWin": "c:\\IDF\\v5.3.1\\esp-idf",
+    "idf.espIdfPathWin": "C:\\Users\\Eduardo Nogueira\\esp\\v5.4\\esp-idf",
     "idf.openOcdConfigs": [
         "board/esp32s3-builtin.cfg"
     ],
     "idf.portWin": "COM11",
-    "idf.toolsPathWin": "c:\\IDF\\ESPRESSIF",
+    "idf.toolsPathWin": "c:\\idf",
     "idf.flashType": "UART",
     "files.associations": {
         "*.tcc": "c",
         "format": "c"
-    }
+    },
+    "cmake.sourceDirectory": "C:/Users/Eduardo Nogueira/Documents/Tonex one/Tonex/Files"
 }
