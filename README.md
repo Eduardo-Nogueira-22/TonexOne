@@ -23,9 +23,9 @@ The project is ready to be built using the ESP32-S3 SUPER-MINI. To modify the pl
 ## 3d Circuit
 ![3d Circuit](Files/3d_Circuit.png)
 
-![3d Circuit](Files/3d_circuit 2.png)
+![3d Circuit](Files/3d_circuit2.png)
 
-Gerber: (Files/Gerber_TONEX.zip)
+Gerber: ![Gerber](Files/Gerber_TONEX.zip)
 
 ## Case 3d
 
