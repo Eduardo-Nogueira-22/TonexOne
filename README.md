@@ -16,4 +16,12 @@ The project is ready to be built using the ESP32-S3 SUPER-MINI. To modify the pl
 
 ![ESP32-S3 Super-mini](https://ae01.alicdn.com/kf/Se5c04b089cb748cfbdbfbe46a277bd3cj.jpg_640x640q90.jpg)
 
+## Circuit Schematics
+
+
+## 3d Circuit
+
+## Case 3d
+
+## Device
 
