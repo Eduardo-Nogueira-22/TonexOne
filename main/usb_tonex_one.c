@@ -1174,9 +1174,9 @@ static esp_err_t usb_tonex_one_process_single_message(uint8_t* data, uint16_t le
                     lcd_send_string(preset_name);
                     
                     char buffer[20];
-                    sprintf(buffer, "Preset = %d", current_preset);
+                    sprintf(buffer, "Preset = %d", 1+current_preset);
                     lcd_put_cur(2, 0);
-                    lcd_send_string("Preset =   ");
+                    lcd_send_string("Preset =     ");
                     lcd_put_cur(2, 0);
                     lcd_send_string(buffer);
 
@@ -1311,7 +1311,7 @@ void usb_tonex_one_handle(class_driver_t* driver_obj)
                     case USB_COMMAND_MODIFY_PARAMETER:
                     {
                         usb_tonex_one_modify_parameter(message.Payload, message.PayloadFloat);
-                        usb_tonex_one_send_parameters();
+                        usb_tonex_one_send_parameters();                                          
                     } break;
                 }
             }

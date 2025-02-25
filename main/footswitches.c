@@ -268,7 +268,7 @@ static void footswitch_handle_quad_banked(void)
         // any buttons pressed?
         if (binary_val != 0)
         {
-            // check if A+B is pressed
+            // check if 1+2 is pressed
             if (binary_val == 0x03)
             {
                 if (FootswitchControl.current_bank > 0)
@@ -280,7 +280,7 @@ static void footswitch_handle_quad_banked(void)
 
                 FootswitchControl.state = FOOTSWITCH_WAIT_RELEASE_1;
             }
-            // check if C+D is pressed
+            // check if 2+3 is pressed
             else if (binary_val == 0x06)
             {
                 if (FootswitchControl.current_bank < BANK_MAXIMUM)
@@ -292,10 +292,26 @@ static void footswitch_handle_quad_banked(void)
 
                 FootswitchControl.state = FOOTSWITCH_WAIT_RELEASE_1;
             }
+            // check if 1+4 is pressed
             else if (binary_val == 0x09) // 1-4
             {
-                midi_helper_adjust_param_via_midi(2, state_dly);               
+                //midi_helper_adjust_param_via_midi(2, state_dly); 
+                //state_dly = tonex_params_clamp_value(95, state_dly);
+                usb_modify_parameter(95, state_dly); 
+                if (state_dly == 1)
+                {
+                    state_dly = 0;
+                    // lcd_put_cur(1, 0);
+                    // lcd_send_string("DLY");
+                }
+                else if (state_dly == 0)
+                {
+                    state_dly = 1;
+                    // lcd_put_cur(1, 0);
+                    // lcd_send_string("   ");
+                }             
             }
+            // check if 3+6 is pressed
             else if (binary_val == 0x24) // 3-6
             {
                 midi_helper_adjust_param_via_midi(32, state_mod);
@@ -312,7 +328,8 @@ static void footswitch_handle_quad_banked(void)
                     lcd_send_string("   ");
                 }
             }
-               else if (binary_val == 0x12) // 2-5
+            // check if 2+5 is pressed
+            else if (binary_val == 0x12) // 2-5
             {
                 midi_helper_adjust_param_via_midi(18, state_comp);
                 if (state_comp == 0)
@@ -466,13 +483,8 @@ void footswitch_task(void *arg)
     // let things settle
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-#if CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43B
-    // 4.3B doesn't have enough IO, only supports dual mode
-    mode = FOOTSWITCH_MODE_DUAL_UP_DOWN;
-#else
     // others, get the currently configured mode from web config
     mode = control_get_config_footswitch_mode();
-#endif
 
     while (1)
     {
@@ -542,8 +554,7 @@ void footswitches_init(void)
     memset((void *)&FootswitchControl, 0, sizeof(FootswitchControl));
     FootswitchControl.state = FOOTSWITCH_IDLE;
 
-#if CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_ZERO || CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_169 || CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_DEVKITC || CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_M5ATOMS3R
-    // init GPIO
+   // init GPIO
     gpio_config_t gpio_config_struct;
 
     gpio_config_struct.pin_bit_mask = (((uint64_t)1 << FOOTSWITCH_1) | ((uint64_t)1 << FOOTSWITCH_2) | ((uint64_t)1 << FOOTSWITCH_3) | ((uint64_t)1 << FOOTSWITCH_4) | ((uint64_t)1 << FOOTSWITCH_5) | ((uint64_t)1 << FOOTSWITCH_6));
@@ -552,7 +563,7 @@ void footswitches_init(void)
     gpio_config_struct.pull_down_en = GPIO_PULLDOWN_DISABLE;
     gpio_config_struct.intr_type = GPIO_INTR_DISABLE;
     gpio_config(&gpio_config_struct);
-#endif
+
 
     // init leds
     //leds_init();

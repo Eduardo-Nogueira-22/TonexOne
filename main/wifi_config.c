@@ -47,6 +47,7 @@ limitations under the License.
 #include "usb_comms.h"
 #include "task_priorities.h"
 #include "tonex_params.h"
+#include "i2c-lcd.h"
 
 #define WIFI_CONFIG_TASK_STACK_SIZE   (3 * 1024)
 
@@ -293,6 +294,45 @@ static void wifi_build_params_json(void)
         json_gen_obj_set_float(&pWebConfig->jstr, "Min", param_ptr[loop].Min);
         json_gen_obj_set_float(&pWebConfig->jstr, "Max", param_ptr[loop].Max);
         json_gen_obj_set_string(&pWebConfig->jstr, "NAME", param_ptr[loop].Name);
+
+        // //display efeitos
+        // tTonexParameter* param_ptr;
+        // tonex_params_get_locked_access(&param_ptr);
+        // if (param_ptr[1].Value==1){
+        //     lcd_put_cur(1, 0);
+        //     lcd_send_string("|N|");
+        // }else{
+        //     lcd_put_cur(1, 0); 
+        //     lcd_send_string("   ");
+        // }
+        // if (param_ptr[6].Value==1){
+        //     lcd_put_cur(1, 4);
+        //     lcd_send_string("|C|");
+        // }else{
+        //     lcd_put_cur(1, 4); 
+        //     lcd_send_string("   ");
+        // }
+        // if (param_ptr[64].Value==1){
+        //     lcd_put_cur(1, 8);
+        //     lcd_send_string("|M|");
+        // }else{
+        //     lcd_put_cur(1, 8);
+        //     lcd_send_string("   ");
+        // }if (param_ptr[95].Value==1){
+        //     lcd_put_cur(1, 12);
+        //     lcd_send_string("|D|");
+        // }else{
+        //     lcd_put_cur(1, 12);     
+        //     lcd_send_string("    ");   
+        // }if (param_ptr[37].Value==1){
+        //     lcd_put_cur(1, 16);
+        //     lcd_send_string("|R|");
+        // }else{
+        //     lcd_put_cur(1, 16);     
+        //     lcd_send_string("    ");   
+        // }     
+
+
 
         json_gen_pop_object(&pWebConfig->jstr);
 

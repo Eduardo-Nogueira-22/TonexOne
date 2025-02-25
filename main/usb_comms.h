@@ -33,7 +33,7 @@ enum USB_Commands
     USB_COMMAND_PREVIOUS_PRESET,
     USB_COMMAND_MODIFY_PARAMETER
 };
-
+#include "usb/usb_host.h"
 typedef struct 
 {
     usb_host_client_handle_t client_hdl;

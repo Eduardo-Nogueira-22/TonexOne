@@ -62,17 +62,8 @@ limitations under the License.
 #include "midi_control.h"
 #include "midi_serial.h"
 #include "wifi_config.h"
-//#include "leds.h"
 #include "tonex_params.h"
 #include "i2c-lcd.h"
-
-// #define I2C_MASTER_NUM                  0       /*!< I2C master i2c port number, the number of i2c peripheral interfaces available will depend on the chip */
-// #define I2C_MASTER_FREQ_HZ              400000                     /*!< I2C master clock frequency */
-// #define I2C_MASTER_TX_BUF_DISABLE       0                          /*!< I2C master doesn't need buffer */
-// #define I2C_MASTER_RX_BUF_DISABLE       0                          /*!< I2C master doesn't need buffer */
-
-// #define I2C_CLR_BUS_SCL_NUM            (9)
-// #define I2C_CLR_BUS_HALF_PERIOD_US     (5)
 
 static const char *TAG = "app_main";
 

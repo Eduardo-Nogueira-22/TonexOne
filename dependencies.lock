@@ -94,6 +94,6 @@ direct_dependencies:
 - espressif/usb_host_cdc_acm
 - idf
 - lvgl/lvgl
-manifest_hash: 8ce0c720d4974c4a5c3e21c8587b68aea835f9b7d14567d6f7f491d971c5f4fd
+manifest_hash: 4b2e7b3a20af1bfffe87882e3abdb7d277d0b81e256d55be732699b713193bb4
 target: esp32s3
 version: 2.0.0

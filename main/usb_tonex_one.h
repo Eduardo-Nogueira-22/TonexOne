@@ -24,6 +24,7 @@ extern "C" {
 #endif
 
 #define MAX_PRESETS             20
+#include "usb_comms.h"
 
 void usb_tonex_one_handle(class_driver_t* driver_obj);
 void usb_tonex_one_init(class_driver_t* driver_obj, QueueHandle_t comms_queue);

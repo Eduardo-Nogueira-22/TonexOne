@@ -12,7 +12,7 @@ C:/Users/Eduardo Nogueira/Tonex/build/CMakeFiles/monitor.dir
 C:/Users/Eduardo Nogueira/Tonex/build/CMakeFiles/flash.dir
 C:/Users/Eduardo Nogueira/Tonex/build/CMakeFiles/encrypted-flash.dir
 C:/Users/Eduardo Nogueira/Tonex/build/CMakeFiles/_project_elf_src.dir
-C:/Users/Eduardo Nogueira/Tonex/build/CMakeFiles/Tonex.elf.dir
+C:/Users/Eduardo Nogueira/Tonex/build/CMakeFiles/TONEX.elf.dir
 C:/Users/Eduardo Nogueira/Tonex/build/CMakeFiles/size.dir
 C:/Users/Eduardo Nogueira/Tonex/build/CMakeFiles/size-files.dir
 C:/Users/Eduardo Nogueira/Tonex/build/CMakeFiles/size-components.dir

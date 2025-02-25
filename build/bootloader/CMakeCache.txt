@@ -257,7 +257,7 @@ PYTHON:UNINITIALIZED=c:/IDF/ESPRESSIF/python_env/idf5.3_py3.11_env/Scripts/pytho
 PYTHON_DEPS_CHECKED:UNINITIALIZED=1
 
 //No help, variable specified on the command line.
-SDKCONFIG:UNINITIALIZED=C:/Users/Eduardo Nogueira/Tonex/sdkconfig
+SDKCONFIG:UNINITIALIZED=C:/Users/Eduardo Nogueira/Tonex/build/sdkconfig
 
 //Value Computed by CMake
 bootloader_BINARY_DIR:STATIC=C:/Users/Eduardo Nogueira/Tonex/build/bootloader

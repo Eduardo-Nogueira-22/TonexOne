@@ -5,7 +5,7 @@
     "project_path":       "C:/IDF/v5.3.1/esp-idf/components/bootloader/subproject",
     "idf_path":           "C:/IDF/v5.3.1/esp-idf",
     "build_dir":          "C:/Users/Eduardo Nogueira/Tonex/build/bootloader",
-    "config_file":        "C:/Users/Eduardo Nogueira/Tonex/sdkconfig",
+    "config_file":        "C:/Users/Eduardo Nogueira/Tonex/build/sdkconfig",
     "config_defaults":    "",
     "bootloader_elf":     "",
     "app_elf":            "bootloader.elf",

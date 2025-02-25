@@ -6,9 +6,14 @@
 #include "driver/i2c.h"
 #include "i2c-lcd.h"
 #include "unistd.h"
+#include "usb_tonex_one.h"
+#include "tonex_params.h"
+#include "task_priorities.h"
+
 
 static const char *TAG = "i2c-simple-example";
 
+#define LCD_TASK_STACK_SIZE (3 * 1024)
 #define I2C_MASTER_SCL_IO           GPIO_NUM_9      /*!< GPIO number used for I2C master clock */
 #define I2C_MASTER_SDA_IO           GPIO_NUM_8      /*!< GPIO number used for I2C master data  */
 #define I2C_MASTER_NUM              0                      /*!< I2C master i2c port number, the number of i2c peripheral interfaces available will depend on the chip */
@@ -132,10 +137,55 @@ static esp_err_t i2c_master_init(void)
     return i2c_driver_install(i2c_master_port, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
 }
 
+
+void lcd_task(void *arg)
+{   
+	tTonexParameter* param_ptr;
+
+	 while(1){
+        tonex_params_get_locked_access(&param_ptr);
+        if (param_ptr[1].Value==1){
+            lcd_put_cur(1, 0);
+            lcd_send_string("|N|");
+        }else{
+            lcd_put_cur(1, 0); 
+            lcd_send_string("   ");
+        }
+        if (param_ptr[6].Value==1){
+            lcd_put_cur(1, 4);
+            lcd_send_string("|C|");
+        }else{
+            lcd_put_cur(1, 4); 
+            lcd_send_string("   ");
+        }
+        if (param_ptr[64].Value==1){
+            lcd_put_cur(1, 8);
+            lcd_send_string("|M|");
+        }else{
+            lcd_put_cur(1, 8);
+            lcd_send_string("   ");
+        }if (param_ptr[95].Value==1){
+            lcd_put_cur(1, 12);
+            lcd_send_string("|D|");
+        }else{
+            lcd_put_cur(1, 12);     
+            lcd_send_string("    ");   
+        }if (param_ptr[37].Value==1){
+            lcd_put_cur(1, 16);
+            lcd_send_string("|R|");
+        }else{
+            lcd_put_cur(1, 16);     
+            lcd_send_string("    ");   
+        }    
+		vTaskDelay(pdMS_TO_TICKS(1000));
+	 } 
+}
+
 void lcd_function(void)
 {
     ESP_ERROR_CHECK(i2c_master_init());
     ESP_LOGI(TAG, "I2C initialized successfully");
+	xTaskCreatePinnedToCore(lcd_task, "LCD", LCD_TASK_STACK_SIZE, NULL, FOOTSWITCH_TASK_PRIORITY, NULL, 1);
     
     lcd_init();
     lcd_clear();
@@ -151,8 +201,8 @@ void lcd_function(void)
     // lcd_send_string(buffer);
 
    lcd_put_cur(3, 2);
-   lcd_send_string("UP");
-
-   lcd_put_cur(3, 17);
    lcd_send_string("DOWN");
+
+   lcd_put_cur(3, 15);
+   lcd_send_string("UP");
 }

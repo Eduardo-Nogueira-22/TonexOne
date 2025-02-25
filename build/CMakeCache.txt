@@ -154,7 +154,7 @@ CMAKE_INSTALL_MANDIR:PATH=
 CMAKE_INSTALL_OLDINCLUDEDIR:PATH=/usr/include
 
 //Install path prefix, prepended onto install directories.
-CMAKE_INSTALL_PREFIX:PATH=C:/Program Files (x86)/Tonex
+CMAKE_INSTALL_PREFIX:PATH=C:/Program Files (x86)/TONEX
 
 //Run-time variable data (LOCALSTATEDIR/run)
 CMAKE_INSTALL_RUNSTATEDIR:PATH=
@@ -210,7 +210,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=Tonex
+CMAKE_PROJECT_NAME:STATIC=TONEX
 
 //Value Computed by CMake
 CMAKE_PROJECT_VERSION:STATIC=3.6.0
@@ -347,16 +347,16 @@ Mbed TLS_SOURCE_DIR:STATIC=C:/IDF/v5.3.1/esp-idf/components/mbedtls/mbedtls
 PYTHON_DEPS_CHECKED:UNINITIALIZED=1
 
 //No help, variable specified on the command line.
-SDKCONFIG:UNINITIALIZED=c:\Users\Eduardo Nogueira\Tonex\sdkconfig
+SDKCONFIG:UNINITIALIZED=c:\Users\Eduardo Nogueira\Tonex\build/sdkconfig
 
 //Value Computed by CMake
-Tonex_BINARY_DIR:STATIC=C:/Users/Eduardo Nogueira/Tonex/build
+TONEX_BINARY_DIR:STATIC=C:/Users/Eduardo Nogueira/Tonex/build
 
 //Value Computed by CMake
-Tonex_IS_TOP_LEVEL:STATIC=ON
+TONEX_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
-Tonex_SOURCE_DIR:STATIC=C:/Users/Eduardo Nogueira/Tonex
+TONEX_SOURCE_DIR:STATIC=C:/Users/Eduardo Nogueira/Tonex
 
 //Allow unsafe builds. These builds ARE NOT SECURE.
 UNSAFE_BUILD:BOOL=OFF
@@ -591,7 +591,7 @@ FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 //ADVANCED property for variable: GIT_EXECUTABLE
 GIT_EXECUTABLE-ADVANCED:INTERNAL=1
 //CMAKE_INSTALL_PREFIX during last run
-_GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=C:/Program Files (x86)/Tonex
+_GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=C:/Program Files (x86)/TONEX
 _Python3_EXECUTABLE:INTERNAL=c:/IDF/ESPRESSIF/python_env/idf5.3_py3.11_env/Scripts/python.exe
 //Python3 Properties
 _Python3_INTERPRETER_PROPERTIES:INTERNAL=Python;3;11;2;32;;;c:\IDF\ESPRESSIF\tools\idf-python\3.11.2\Lib;c:\IDF\ESPRESSIF\tools\idf-python\3.11.2\Lib;c:\IDF\ESPRESSIF\python_env\idf5.3_py3.11_env\Lib\site-packages;c:\IDF\ESPRESSIF\python_env\idf5.3_py3.11_env\Lib\site-packages

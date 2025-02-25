@@ -24,3 +24,4 @@ void lcd_put_cur(int row, int col);
 void lcd_init (void);
 void lcd_send_string (char *str);
 void lcd_function(void);
+void lcd_task(void* arg);

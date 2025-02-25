@@ -1,12 +1,16 @@
 | Supported Targets | ESP32-S3 |
 | ----------------- | -------- |
 
-# _Tonex ONE_
+# _Tonex ONE_ 
 
-This project is completely based on Greg Smith's project (link attached). In the modifications there is the implementation of the 20x4 LCD display using I2C and 6 footswitches were inserted directly, and some combined functions for triggering delay, compressor and modulation.
+## Goal 
 
-https://github.com/Builty/TonexOneController
+The project aims to implement footswitches directly on the microcontroller and an LCD via I2C, in addition to providing a PCB for prototyping and the case in 3D printing. In the modifications of the original code there is the implementation of the 20x4 LCD display using I2C and 6 pedals were directly inserted, and some combined functions for triggering delay, compressor and modulation.
 
+
+## 🙏 Acknowledgements <a name="acknowledgements"></a>
+- [Greg Smith's](https://github.com/Builty/TonexOneController) All system features. This project is completely based on Greg Smith's project.
+- https://github.com/vit3k/tonex_controller for great work on reverse engineering the Tonex One USB protocol.
 
 
 ## Build
