@@ -25,7 +25,7 @@ extern "C" {
 
 #define USB_DAEMON_TASK_PRIORITY        (tskIDLE_PRIORITY + 4)
 #define USB_CLASS_TASK_PRIORITY         (tskIDLE_PRIORITY + 4)
-#define DISPLAY_TASK_PRIORITY           (tskIDLE_PRIORITY + 2)
+#define LCD_TASK_PRIORITY               (tskIDLE_PRIORITY + 2)
 #define CTRL_TASK_PRIORITY              (tskIDLE_PRIORITY + 3)
 #define MIDI_SERIAL_TASK_PRIORITY       (tskIDLE_PRIORITY + 2)
 #define FOOTSWITCH_TASK_PRIORITY        (tskIDLE_PRIORITY + 1)

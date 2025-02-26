@@ -138,11 +138,10 @@ static esp_err_t i2c_master_init(void)
 }
 
 
-void lcd_task(void *arg)
+void lcd_effect(void *arg)
 {   
 	tTonexParameter* param_ptr;
-
-	 while(1){
+    while(1){
         tonex_params_get_locked_access(&param_ptr);
         if (param_ptr[1].Value==1){
             lcd_put_cur(1, 0);
@@ -176,16 +175,17 @@ void lcd_task(void *arg)
         }else{
             lcd_put_cur(1, 16);     
             lcd_send_string("    ");   
-        }    
-		vTaskDelay(pdMS_TO_TICKS(1000));
-	 } 
+        }   
+        tonex_params_release_locked_access(); 
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
 }
 
 void lcd_function(void)
 {
     ESP_ERROR_CHECK(i2c_master_init());
     ESP_LOGI(TAG, "I2C initialized successfully");
-	xTaskCreatePinnedToCore(lcd_task, "LCD", LCD_TASK_STACK_SIZE, NULL, FOOTSWITCH_TASK_PRIORITY, NULL, 1);
+	xTaskCreatePinnedToCore(lcd_effect, "LCD", LCD_TASK_STACK_SIZE, NULL, LCD_TASK_PRIORITY, NULL, 1);
     
     lcd_init();
     lcd_clear();

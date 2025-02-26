@@ -42,6 +42,7 @@ limitations under the License.
 #include "midi_helper.h"
 #include "i2c-lcd.h"
 #include "usb_tonex_one.h"
+#include "tonex_params.h"
 
 #define FOOTSWITCH_TASK_STACK_SIZE (3 * 1024)
 #define FOOTSWITCH_SAMPLE_COUNT 5 // 20 msec per sample
@@ -199,33 +200,15 @@ static void footswitch_handle_quad_banked(void)
 {
     uint8_t value;
     uint8_t binary_val = 0;
-    uint8_t state_dly = 127;
-    uint8_t state_comp = 127;
-    uint8_t state_mod = 127;
-        // static int8_t LONG_PRESS_TIME = 1000;
-    // static uint8_t SHORT_PRESS_TIME = 200;
-    // static int64_t press_start_time = 0;
-    // int64_t press_duration;
-
+    float state_dly = 1;
+    float state_comp = 1;
+    float state_mod = 1;
    
     // read all 4 switches (and swap so 1 is pressed)
     read_footswitch_input(FOOTSWITCH_1, &value);
     if (value == 0)
     {
-        //     press_start_time = esp_timer_get_time() / 1000;  // Tempo em ms
-
-        // } else {
-        //     press_duration = (esp_timer_get_time() / 1000) - press_start_time;
-        //     if (press_duration < SHORT_PRESS_TIME) {
         binary_val |= 1;
-        // } else if (press_duration >= LONG_PRESS_TIME) {
-        //     midi_helper_adjust_param_via_midi(2, state_dly);
-        //     if(state_dly==0){
-        //         state_dly = 127;
-        //     } else {
-        //         state_dly = 0;
-        //     }
-        // }
     }
 
     read_footswitch_input(FOOTSWITCH_2, &value);
@@ -267,7 +250,7 @@ static void footswitch_handle_quad_banked(void)
     {
         // any buttons pressed?
         if (binary_val != 0)
-        {
+        {            
             // check if 1+2 is pressed
             if (binary_val == 0x03)
             {
@@ -297,54 +280,26 @@ static void footswitch_handle_quad_banked(void)
             {
                 //midi_helper_adjust_param_via_midi(2, state_dly); 
                 //state_dly = tonex_params_clamp_value(95, state_dly);
-                usb_modify_parameter(95, state_dly); 
+                usb_modify_parameter(TONEX_PARAM_DELAY_ENABLE, state_dly); 
                 if (state_dly == 1)
                 {
                     state_dly = 0;
-                    // lcd_put_cur(1, 0);
-                    // lcd_send_string("DLY");
                 }
                 else if (state_dly == 0)
                 {
                     state_dly = 1;
-                    // lcd_put_cur(1, 0);
-                    // lcd_send_string("   ");
                 }             
             }
             // check if 3+6 is pressed
             else if (binary_val == 0x24) // 3-6
             {
-                midi_helper_adjust_param_via_midi(32, state_mod);
-                if (state_mod == 0)
-                {
-                    state_mod = 127;
-                    lcd_put_cur(1, 10);
-                    lcd_send_string("MOD");
-                }
-                else if (state_mod == 127)
-                {
-                    state_mod = 0;
-                    lcd_put_cur(1, 10);
-                    lcd_send_string("   ");
-                }
+                usb_modify_parameter(TONEX_PARAM_COMP_ENABLE, state_comp);
+                    
             }
             // check if 2+5 is pressed
             else if (binary_val == 0x12) // 2-5
             {
-                midi_helper_adjust_param_via_midi(18, state_comp);
-                if (state_comp == 0)
-                {
-                    state_comp = 127;
-                    
-                    lcd_put_cur(1, 4);
-                    lcd_send_string("COMP");
-                }
-                else if (state_comp == 127)
-                {
-                    state_comp = 0;
-                    lcd_put_cur(1, 4);
-                    lcd_send_string("    ");
-                }
+                usb_modify_parameter(TONEX_PARAM_MODULATION_ENABLE, state_mod);            
             }
             else
             {

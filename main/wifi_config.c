@@ -296,48 +296,12 @@ static void wifi_build_params_json(void)
         json_gen_obj_set_string(&pWebConfig->jstr, "NAME", param_ptr[loop].Name);
 
         // //display efeitos
-        // tTonexParameter* param_ptr;
-        // tonex_params_get_locked_access(&param_ptr);
-        // if (param_ptr[1].Value==1){
-        //     lcd_put_cur(1, 0);
-        //     lcd_send_string("|N|");
-        // }else{
-        //     lcd_put_cur(1, 0); 
-        //     lcd_send_string("   ");
-        // }
-        // if (param_ptr[6].Value==1){
-        //     lcd_put_cur(1, 4);
-        //     lcd_send_string("|C|");
-        // }else{
-        //     lcd_put_cur(1, 4); 
-        //     lcd_send_string("   ");
-        // }
-        // if (param_ptr[64].Value==1){
-        //     lcd_put_cur(1, 8);
-        //     lcd_send_string("|M|");
-        // }else{
-        //     lcd_put_cur(1, 8);
-        //     lcd_send_string("   ");
-        // }if (param_ptr[95].Value==1){
-        //     lcd_put_cur(1, 12);
-        //     lcd_send_string("|D|");
-        // }else{
-        //     lcd_put_cur(1, 12);     
-        //     lcd_send_string("    ");   
-        // }if (param_ptr[37].Value==1){
-        //     lcd_put_cur(1, 16);
-        //     lcd_send_string("|R|");
-        // }else{
-        //     lcd_put_cur(1, 16);     
-        //     lcd_send_string("    ");   
-        // }     
-
-
-
+        //lcd_effect();
+         
         json_gen_pop_object(&pWebConfig->jstr);
 
         // don't hog the param pointer                    
-        tonex_params_release_locked_access();
+        tonex_params_release_locked_access(); //mutex
     }
     
     // add the } for PARAMS
@@ -1229,7 +1193,7 @@ static void wifi_config_task(void *arg)
             if (wifi_kill_checked == 0)
             {
                 // allow WiFi AP to run for 60 seconds
-                if ((xTaskGetTickCount() - tick_timer) >= 60000)
+                if ((xTaskGetTickCount() - tick_timer) >= 120000)
                 {
                     wifi_kill_checked = 1;
 

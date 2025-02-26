@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "TONEX",
-    "project_version":    "c1bc2fb-dirty",
+    "project_version":    "9308b62-dirty",
     "project_path":       "C:/Users/Eduardo Nogueira/Tonex",
     "idf_path":           "C:/IDF/v5.3.1/esp-idf",
     "build_dir":          "C:/Users/Eduardo Nogueira/Tonex/build",
