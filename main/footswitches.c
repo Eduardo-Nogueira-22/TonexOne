@@ -200,9 +200,7 @@ static void footswitch_handle_quad_banked(void)
 {
     uint8_t value;
     uint8_t binary_val = 0;
-    float state_dly = 1;
-    float state_comp = 1;
-    float state_mod = 1;
+    tTonexParameter* param_ptr;
    
     // read all 4 switches (and swap so 1 is pressed)
     read_footswitch_input(FOOTSWITCH_1, &value);
@@ -278,28 +276,24 @@ static void footswitch_handle_quad_banked(void)
             // check if 1+4 is pressed
             else if (binary_val == 0x09) // 1-4
             {
-                //midi_helper_adjust_param_via_midi(2, state_dly); 
-                //state_dly = tonex_params_clamp_value(95, state_dly);
-                usb_modify_parameter(TONEX_PARAM_DELAY_ENABLE, state_dly); 
-                if (state_dly == 1)
-                {
-                    state_dly = 0;
-                }
-                else if (state_dly == 0)
-                {
-                    state_dly = 1;
-                }             
+                tonex_params_get_locked_access(&param_ptr);
+                usb_modify_parameter(TONEX_PARAM_DELAY_ENABLE, !(param_ptr[TONEX_PARAM_DELAY_ENABLE].Value)); 
+                tonex_params_release_locked_access();          
             }
             // check if 3+6 is pressed
             else if (binary_val == 0x24) // 3-6
             {
-                usb_modify_parameter(TONEX_PARAM_COMP_ENABLE, state_comp);
+                tonex_params_get_locked_access(&param_ptr);
+                usb_modify_parameter(TONEX_PARAM_COMP_ENABLE, !(param_ptr[TONEX_PARAM_COMP_ENABLE].Value)); 
+                tonex_params_release_locked_access(); 
                     
             }
             // check if 2+5 is pressed
             else if (binary_val == 0x12) // 2-5
             {
-                usb_modify_parameter(TONEX_PARAM_MODULATION_ENABLE, state_mod);            
+                tonex_params_get_locked_access(&param_ptr);
+                usb_modify_parameter(TONEX_PARAM_MODULATION_ENABLE, !(param_ptr[TONEX_PARAM_MODULATION_ENABLE].Value)); 
+                tonex_params_release_locked_access();           
             }
             else
             {
