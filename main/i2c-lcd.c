@@ -136,13 +136,20 @@ static esp_err_t i2c_master_init(void)
 
     return i2c_driver_install(i2c_master_port, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
 }
-
+void lcd_clear_status( ){
+    lcd_put_cur(1, 0);
+    lcd_send_string("                    ");
+    lcd_put_cur(3, 0);
+    lcd_send_string("                    ");    
+}
 
 void lcd_effect(void *arg)
 {   
 	tTonexParameter* param_ptr;
+
     while(1){
         tonex_params_get_locked_access(&param_ptr);
+        //lcd_clear_status();
         if (param_ptr[1].Value==1){
             lcd_put_cur(1, 0);
             lcd_send_string("|N|");
@@ -175,9 +182,18 @@ void lcd_effect(void *arg)
         }else{
             lcd_put_cur(1, 16);     
             lcd_send_string("    ");   
-        }   
+        }
+
+        sprintf(buffer, "VOL=%.1f", param_ptr[TONEX_PARAM_MODEL_VOLUME].Value);
+        lcd_put_cur(3, 0);
+        lcd_send_string(buffer);
+        sprintf(buffer, "GAIN=%.1f", param_ptr[TONEX_PARAM_MODEL_GAIN].Value);
+        lcd_put_cur(3, 8);
+        lcd_send_string(buffer);
+        
+         
         tonex_params_release_locked_access(); 
-        vTaskDelay(pdMS_TO_TICKS(2000));
+        vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }
 
@@ -190,11 +206,11 @@ void lcd_function(void)
     lcd_init();
     lcd_clear();
 
-//    lcd_put_cur(0, 0);
-//    lcd_send_string("Hello world!");
+   lcd_put_cur(0, 0);
+   lcd_send_string("TONEX ONE CONTROLLER");
 
-//    lcd_put_cur(1, 0);
-//    lcd_send_string("from ESP32");
+   lcd_put_cur(1, 5);
+   lcd_send_string("WELCOME");
 
     // sprintf(buffer, "val=%.2f", num);
     // lcd_put_cur(2, 0);
@@ -205,4 +221,9 @@ void lcd_function(void)
 
    lcd_put_cur(3, 15);
    lcd_send_string("UP");
+   vTaskDelay(pdMS_TO_TICKS(2000));
+   lcd_clear();
+
+   xTaskCreatePinnedToCore(lcd_effect, "LCD", LCD_TASK_STACK_SIZE, NULL, LCD_TASK_PRIORITY, NULL, 1);
+   
 }

@@ -50,6 +50,10 @@ limitations under the License.
 #define BANK_MAXIMUM (MAX_PRESETS / BANK_MODE_BUTTONS)
 #define BUTTON_FACTORY_RESET_TIME 500 // * 20 msec = 10 secs
 
+#define DEBOUNCE_TIME_MS 50       // Tempo de debounce (50ms)
+#define DOUBLE_CLICK_TIME_MS 500  // Tempo máximo entre cliques para duplo clique (500ms)
+#define LONG_PRESS_TIME_MS 2000   // Tempo mínimo para clique longo (2000ms)
+
 enum FootswitchStates
 {
     FOOTSWITCH_IDLE,
@@ -196,42 +200,206 @@ static void footswitch_handle_dual_mode(void)
  * RETURN:
  * NOTES:
  *****************************************************************************/
+
+// Função para detectar clique simples, duplo e longo
+static uint8_t detect_button_click(uint8_t BUTTON_GPIO)
+{
+    static int64_t last_press_time = 0;
+    static int click_count = 0;
+    int64_t press_start_time = esp_timer_get_time() / 1000; // Tempo inicial em ms
+    
+    // Aguarda o botão ser solto ou detectar clique longo
+    while (gpio_get_level(BUTTON_GPIO) == 0) {
+        int64_t elapsed_time = (esp_timer_get_time() / 1000) - press_start_time;
+        if (elapsed_time >= LONG_PRESS_TIME_MS) {
+            while (gpio_get_level(BUTTON_GPIO) == 0); // Espera soltar
+            vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_TIME_MS));
+            click_count = 0;  // Reseta o contador para ignorar outros eventos
+            return 3;
+        }
+    }
+    vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_TIME_MS)); // Tempo de debounce
+
+    int64_t press_time = esp_timer_get_time() / 1000;
+
+    // Verifica se é um clique duplo
+    if ((press_time - last_press_time) <= DOUBLE_CLICK_TIME_MS) {
+        click_count++;
+    } else {
+        click_count = 1;  // Reset para um novo clique
+    }
+
+    last_press_time = press_time;
+
+    if (click_count == 2) {
+        //printf("Duplo clique detectado!\n");        
+        click_count = 0;  // Reseta para evitar triplo clique
+        return 2;
+    } else {
+        // Aguardar para ver se um segundo clique ocorre
+        int64_t wait_time = esp_timer_get_time() / 1000;
+        while ((esp_timer_get_time() / 1000 - wait_time) < DOUBLE_CLICK_TIME_MS) {
+            if (gpio_get_level(BUTTON_GPIO) == 0) {
+                // Se outro clique ocorrer, incrementar o contador e sair do loop
+                click_count++;
+                
+                last_press_time = esp_timer_get_time() / 1000;   
+                if (click_count == 2) {
+                  click_count = 0;
+                  //printf("Clique duplo detectado!\n");
+                  return 2;
+                 }              
+                break;
+            }
+            vTaskDelay(pdMS_TO_TICKS(10)); // Pequeno delay para não travar a CPU
+          }
+          if (click_count == 1) {
+              click_count = 0;
+              //printf("Clique simples detectado!\n");
+              return 1;
+          }
+    } 
+    return 0;
+}
+ 
+
 static void footswitch_handle_quad_banked(void)
 {
     uint8_t value;
     uint8_t binary_val = 0;
     tTonexParameter* param_ptr;
+    float param;
+    u_int8_t st_button;
    
     // read all 4 switches (and swap so 1 is pressed)
     read_footswitch_input(FOOTSWITCH_1, &value);
     if (value == 0)
     {
-        binary_val |= 1;
+        st_button=detect_button_click(FOOTSWITCH_1);
+        if (st_button == 1){
+            binary_val |= 1;
+
+        }else if (st_button == 2){
+            if (FootswitchControl.current_bank > 0)
+                {
+                    // bank down
+                    FootswitchControl.current_bank--;
+                    ESP_LOGI(TAG, "Footswitch banked down %d", FootswitchControl.current_bank);
+                }          
+        }else if (st_button == 3){
+            tonex_params_get_locked_access(&param_ptr);
+            param=param_ptr[TONEX_PARAM_DELAY_ENABLE].Value;
+            if (param == 1.0f){
+                param = 0.0f;
+            }else{
+                param = 1.0f;
+            }
+            usb_modify_parameter(TONEX_PARAM_DELAY_ENABLE, param); 
+            tonex_params_release_locked_access();
+        }
+        st_button=0;
     }
 
     read_footswitch_input(FOOTSWITCH_2, &value);
     if (value == 0)
     {
-        binary_val |= 2;
+        st_button=detect_button_click(FOOTSWITCH_2);
+        if (st_button == 1){
+            binary_val |= 2;
+
+        }else if (st_button == 2){
+            lcd_put_cur(0, 0);
+            lcd_send_string("EDuardo");
+        }else if (st_button == 3){
+            tonex_params_get_locked_access(&param_ptr);
+            param=param_ptr[TONEX_PARAM_COMP_ENABLE].Value;
+            if (param == 1.0f){
+                param = 0.0f;
+            }else{
+                param = 1.0f;
+            }
+            usb_modify_parameter(TONEX_PARAM_COMP_ENABLE, param); 
+            tonex_params_release_locked_access();
+        }
+        st_button=0;
     }
 
     read_footswitch_input(FOOTSWITCH_3, &value);
     if (value == 0)
     {
-        binary_val |= 4;
+        st_button=detect_button_click(FOOTSWITCH_3);
+        if (st_button == 1){
+            binary_val |= 4;
+        }else if (st_button == 2){
+            if (FootswitchControl.current_bank < BANK_MAXIMUM)
+            {
+                // bank up
+                FootswitchControl.current_bank++;
+                ESP_LOGI(TAG, "Footswitch banked up %d", FootswitchControl.current_bank);
+            }         
+        }else if (st_button == 3){
+            tonex_params_get_locked_access(&param_ptr);
+            param=param_ptr[TONEX_PARAM_MODULATION_ENABLE].Value;
+            if (param == 1.0f){
+                param = 0.0f;
+            }else{
+                param = 1.0f;
+            }
+            usb_modify_parameter(TONEX_PARAM_MODULATION_ENABLE, param); 
+            tonex_params_release_locked_access();
+        }
+        st_button=0;
     }
 
     read_footswitch_input(FOOTSWITCH_4, &value);
     if (value == 0)
     {
-        binary_val |= 8;
+        st_button=detect_button_click(FOOTSWITCH_4);
+        if (st_button == 1){
+            binary_val |= 8;
+
+        }else if (st_button == 2){
+            //NOTHING        
+        }else if (st_button == 3){
+            tonex_params_get_locked_access(&param_ptr);
+            param=param_ptr[TONEX_PARAM_REVERB_ENABLE].Value;
+            if (param == 1.0f){
+                param = 0.0f;
+            }else{
+                param = 1.0f;
+            }
+            usb_modify_parameter(TONEX_PARAM_REVERB_ENABLE, param); 
+            tonex_params_release_locked_access();
+        }
+        st_button=0;
     }
 
     read_footswitch_input(FOOTSWITCH_5, &value);
     if (value == 0)
     {
-        // usb_set_preset(5);
-        binary_val |= 16;
+        st_button=detect_button_click(FOOTSWITCH_5);
+        if (st_button == 1){
+            binary_val |= 16;
+
+        }else if (st_button == 2){
+            if (FootswitchControl.current_bank > 0)
+                {
+                    // bank down
+                    FootswitchControl.current_bank--;
+                    ESP_LOGI(TAG, "Footswitch banked down %d", FootswitchControl.current_bank);
+                }          
+        }else if (st_button == 3){
+            tonex_params_get_locked_access(&param_ptr);
+            param=param_ptr[TONEX_PARAM_NOISE_GATE_ENABLE].Value;
+            if (param == 1.0f){
+                param = 0.0f;
+            }else{
+                param = 1.0f;
+            }
+            usb_modify_parameter(TONEX_PARAM_NOISE_GATE_ENABLE, param); 
+            tonex_params_release_locked_access();
+        }
+        st_button=0;
     }
 
     read_footswitch_input(FOOTSWITCH_6, &value);
@@ -271,29 +439,7 @@ static void footswitch_handle_quad_banked(void)
                     ESP_LOGI(TAG, "Footswitch banked up %d", FootswitchControl.current_bank);
                 }
 
-                FootswitchControl.state = FOOTSWITCH_WAIT_RELEASE_1;
-            }
-            // check if 1+4 is pressed
-            else if (binary_val == 0x09) // 1-4
-            {
-                tonex_params_get_locked_access(&param_ptr);
-                usb_modify_parameter(TONEX_PARAM_DELAY_ENABLE, !(param_ptr[TONEX_PARAM_DELAY_ENABLE].Value)); 
-                tonex_params_release_locked_access();          
-            }
-            // check if 3+6 is pressed
-            else if (binary_val == 0x24) // 3-6
-            {
-                tonex_params_get_locked_access(&param_ptr);
-                usb_modify_parameter(TONEX_PARAM_COMP_ENABLE, !(param_ptr[TONEX_PARAM_COMP_ENABLE].Value)); 
-                tonex_params_release_locked_access(); 
-                    
-            }
-            // check if 2+5 is pressed
-            else if (binary_val == 0x12) // 2-5
-            {
-                tonex_params_get_locked_access(&param_ptr);
-                usb_modify_parameter(TONEX_PARAM_MODULATION_ENABLE, !(param_ptr[TONEX_PARAM_MODULATION_ENABLE].Value)); 
-                tonex_params_release_locked_access();           
+                FootswitchControl.state = FOOTSWITCH_WAIT_RELEASE_1;                 
             }
             else
             {
