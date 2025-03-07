@@ -201,67 +201,76 @@ static void footswitch_handle_dual_mode(void)
  * NOTES:
  *****************************************************************************/
 
-// Função para detectar clique simples, duplo e longo
-static uint8_t detect_button_click(uint8_t BUTTON_GPIO)
-{
+// Função para detectar o tipo de clique
+static uint8_t detect_button_click(uint8_t BUTTON_GPIO) {
     static int64_t last_press_time = 0;
     static int click_count = 0;
-    int64_t press_start_time = esp_timer_get_time() / 1000; // Tempo inicial em ms
-    
-    // Aguarda o botão ser solto ou detectar clique longo
-    while (gpio_get_level(BUTTON_GPIO) == 0) {
-        int64_t elapsed_time = (esp_timer_get_time() / 1000) - press_start_time;
-        if (elapsed_time >= LONG_PRESS_TIME_MS) {
-            while (gpio_get_level(BUTTON_GPIO) == 0); // Espera soltar
-            vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_TIME_MS));
-            click_count = 0;  // Reseta o contador para ignorar outros eventos
-            return 3;
-        }
-    }
-    vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_TIME_MS)); // Tempo de debounce
+    static int64_t last_double_click_time = 0; // Adicionado para rastrear o tempo do último clique duplo
 
-    int64_t press_time = esp_timer_get_time() / 1000;
+    // Aguarda o botão ser pressionado
+        int64_t press_start_time = esp_timer_get_time() / 1000; // Tempo inicial em ms
 
-    // Verifica se é um clique duplo
-    if ((press_time - last_press_time) <= DOUBLE_CLICK_TIME_MS) {
-        click_count++;
-    } else {
-        click_count = 1;  // Reset para um novo clique
-    }
-
-    last_press_time = press_time;
-
-    if (click_count == 2) {
-        //printf("Duplo clique detectado!\n");        
-        click_count = 0;  // Reseta para evitar triplo clique
-        return 2;
-    } else {
-        // Aguardar para ver se um segundo clique ocorre
-        int64_t wait_time = esp_timer_get_time() / 1000;
-        while ((esp_timer_get_time() / 1000 - wait_time) < DOUBLE_CLICK_TIME_MS) {
-            if (gpio_get_level(BUTTON_GPIO) == 0) {
-                // Se outro clique ocorrer, incrementar o contador e sair do loop
-                click_count++;
-                
-                last_press_time = esp_timer_get_time() / 1000;   
-                if (click_count == 2) {
-                  click_count = 0;
-                  //printf("Clique duplo detectado!\n");
-                  return 2;
-                 }              
-                break;
+        // Aguarda enquanto o botão está pressionado para verificar clique longo
+        while (gpio_get_level(BUTTON_GPIO) == 0) {
+            int64_t elapsed_time = (esp_timer_get_time() / 1000) - press_start_time;
+            if (elapsed_time >= LONG_PRESS_TIME_MS) {
+               // printf("Clique longo detectado!\n");
+                while (gpio_get_level(BUTTON_GPIO) == 0); // Espera soltar o botão
+                vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_TIME_MS)); // Debounce
+                click_count = 0; // Reseta o contador
+                return 3;
             }
-            vTaskDelay(pdMS_TO_TICKS(10)); // Pequeno delay para não travar a CPU
-          }
-          if (click_count == 1) {
-              click_count = 0;
-              //printf("Clique simples detectado!\n");
-              return 1;
-          }
-    } 
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_TIME_MS)); // Tempo de debounce
+
+        int64_t press_time = esp_timer_get_time() / 1000;
+
+        // Verifica se é um clique duplo
+        if ((press_time - last_press_time) <= DOUBLE_CLICK_TIME_MS) {
+            click_count++;
+        } else {
+            click_count = 1; // Reset para um novo clique
+        }
+
+        last_press_time = press_time;
+
+        if (click_count == 2) {
+            //printf("Duplo clique detectado!\n");
+            click_count = 0; // Reseta para evitar triplo clique
+            last_double_click_time = press_time; // Armazena o tempo do clique duplo
+            return 2;
+        } else {
+            int64_t wait_time = esp_timer_get_time() / 1000;
+            while ((esp_timer_get_time() / 1000 - wait_time) < DOUBLE_CLICK_TIME_MS) {
+                if (gpio_get_level(BUTTON_GPIO) == 0) {
+                    // Se outro clique ocorrer, incrementar o contador e sair do loop
+                    click_count++;
+                    last_press_time = esp_timer_get_time() / 1000;
+                    if (click_count == 2) {
+                        click_count = 0;
+                        //printf("Clique duplo detectado!\n");
+                        last_double_click_time = press_time; // Armazena o tempo do clique duplo
+                        return 2;
+                    }
+                    break;
+                }
+                vTaskDelay(pdMS_TO_TICKS(10)); // Pequeno delay para não travar a CPU
+            }
+            // Verifica se o click_count ainda é 1 após o tempo de espera
+            if (click_count == 1) {
+                // Adicionado: Verifica se o tempo desde o último clique duplo é maior que o tempo de clique duplo
+                if ((press_time - last_double_click_time) > DOUBLE_CLICK_TIME_MS) {
+                    click_count = 0;
+                    //printf("Clique simples detectado!\n");
+                    return 1;
+                } else {
+                    click_count = 0; // Reseta o contador sem retornar clique simples
+                }
+            }
+        }
     return 0;
 }
- 
 
 static void footswitch_handle_quad_banked(void)
 {

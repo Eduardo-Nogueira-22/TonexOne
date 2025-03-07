@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "TONEXONE",
-    "project_version":    "8fc0d7b-dirty",
+    "project_version":    "598660a-dirty",
     "project_path":       "C:/Users/Eduardo Nogueira/Tonexone/TonexOne",
     "idf_path":           "C:/espidf/v5.4/esp-idf",
     "build_dir":          "C:/Users/Eduardo Nogueira/Tonexone/TonexOne/build",
