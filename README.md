@@ -7,10 +7,15 @@
 
 The project aims to implement footswitches directly on the microcontroller and an LCD via I2C, in addition to providing a PCB for prototyping and the case in 3D printing. In the modifications of the original code there is the implementation of the 20x4 LCD display using I2C and 6 pedals were directly inserted, and some combined functions for triggering delay, compressor and modulation.
 
+## Video of Operation on YouTube
+
+Watch the video of the device in operation on YouTube:
+
+[![Video of Operation](Files/device01.jpg)](https://youtu.be/s6k85lcOOtI)
+
 
 ## 🙏 Acknowledgements <a name="acknowledgements"></a>
 - [Greg Smith's](https://github.com/Builty/TonexOneController) All system features. This project is completely based on Greg Smith's project.
-- https://github.com/vit3k/tonex_controller for great work on reverse engineering the Tonex One USB protocol.
 
 
 ## Build
@@ -44,4 +49,15 @@ Below we have the files for printing on a 3D printer. It is important to worry a
 ![STL Tampa](Files/Tampa.stl)
 
 ## Device
+![Device](Files/device01.jpg)
+
+![Device](Files/device02.jpg)
+
+![Device](Files/device03.jpg)
+
+![Device](Files/device04.jpg)
+
+![Device Video](Files/device_video.mp4)
+
+
 
