@@ -92,6 +92,7 @@ static bool get_service_a   = false;
 static bool Isconnecting    = false;
 static bool stop_scan_done  = false;
 
+static uint8_t midi_serial_channel = 0;
 static uint16_t search_start_handle = 0xFFFF;
 static uint16_t search_end_handle = 0;
 static esp_gattc_descr_elem_t *descr_elem_result_a  = NULL;
@@ -588,22 +589,30 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
             // first 2 bytes are header/timestamp bytes, values depend on host. Ignoring them here
             if (param->write.len >= 4)
             {
-                // check the command
-                switch (param->write.value[2] & 0xF0)
+                // check channel
+                if ((param->write.value[2] & 0x0F) != midi_serial_channel)
                 {
-                    case 0xC0:
+                    ESP_LOGI(GATTS_TAG, "BT Midi non-matching channel %d", param->write.value[2] & 0x0F);
+                }
+                else
+                {
+                    // check the command
+                    switch (param->write.value[2] & 0xF0)
                     {
-                        // set preset
-                        control_request_preset_index(param->write.value[3]);
-                    } break;
+                        case 0xC0:
+                        {
+                            // set preset
+                            control_request_preset_index(param->write.value[3]);
+                        } break;
 
-                    case 0xB0:
-                    {
-                        // control change
-                        uint8_t change_num = param->write.value[3];
-                        uint8_t value = param->write.value[4];
-                        midi_helper_adjust_param_via_midi(change_num, value);
-                    } break;
+                        case 0xB0:
+                        {
+                            // control change
+                            uint8_t change_num = param->write.value[3];
+                            uint8_t value = param->write.value[4];
+                            midi_helper_adjust_param_via_midi(change_num, value);
+                        } break;
+                    }
                 }
             }
 
@@ -1097,23 +1106,36 @@ static void __attribute__((unused)) gattc_profile_a_event_handler(esp_gattc_cb_e
             // first 2 bytes are header/timestamp bytes, values depend on host. Ignoring them here
             if (p_data->notify.value_len >= 4)
             {
-                if (p_data->notify.value[2] == 0xC0) 
+                // check channel
+                if ((p_data->notify.value[2] & 0x0F) != midi_serial_channel)
                 {
-                    // set preset
-                    control_request_preset_index(p_data->notify.value[3]);
+                    ESP_LOGI(GATTC_TAG, "BT Midi non-matching channel %d", p_data->notify.value[2] & 0x0F);
                 }
-                else if (p_data->notify.value[2] == 0xB0) 
+                else
                 {
-                    // note issue here with MVave chocolate pedal. Bank up/down sends 
-                    // a control change message, which would modify a different parameter
-                    if (control_get_config_enable_bt_midi_CC())
-                    {                        
-                        // control change
-                        uint8_t change_num = p_data->notify.value[3];
-                        uint8_t value = p_data->notify.value[4];
-                        midi_helper_adjust_param_via_midi(change_num, value);
+                    // check the command
+                    switch (p_data->notify.value[2] & 0xF0)
+                    {
+                        case 0xC0:
+                        {
+                            // set preset
+                            control_request_preset_index(p_data->notify.value[3]);
+                        } break;
+
+                        case 0xB0:
+                        {
+                            // note issue here with MVave chocolate pedal. Bank up/down sends 
+                            // a control change message, which would modify a different parameter
+                            if (control_get_config_item_int(CONFIG_ITEM_ENABLE_BT_MIDI_CC))
+                            {                        
+                                // control change
+                                uint8_t change_num = p_data->notify.value[3];
+                                uint8_t value = p_data->notify.value[4];
+                                midi_helper_adjust_param_via_midi(change_num, value);
+                            }
+                        } break;
                     }
-                } 
+                }
             }
             break;
 
@@ -1474,7 +1496,7 @@ static void InitDeviceList(void)
     remote_device_names_length = 0;
 
     // build list of devices to scan for and connect to if found
-    if (control_get_config_bt_mvave_choc_enable())
+    if (control_get_config_item_int(CONFIG_ITEM_MV_CHOC_ENABLE))
     {
         // M-vave Chocolate device name is 'FootCtrl'
         strncpy(remote_device_names[remote_device_names_length], "FootCtrl", MAX_DEVICE_NAME_LENGTH);
@@ -1485,17 +1507,17 @@ static void InitDeviceList(void)
         remote_device_names_length++;
     }
 
-    if (control_get_config_bt_xvive_md1_enable())
+    if (control_get_config_item_int(CONFIG_ITEM_XV_MD1_ENABLE))
     {
         // Xvive Bluetooth Midi adaptor is 'Xvive MD1'
         strncpy(remote_device_names[remote_device_names_length], "Xvive MD1", MAX_DEVICE_NAME_LENGTH);
         remote_device_names_length++;
     }
 
-    if (control_get_config_bt_custom_enable())
+    if (control_get_config_item_int(CONFIG_ITEM_CUSTOM_BT_ENABLE))
     {
         // Custom Bluetooth device name
-        control_get_config_custom_bt_name(remote_device_names[remote_device_names_length]);
+        control_get_config_item_string(CONFIG_ITEM_BT_CUSTOM_NAME, remote_device_names[remote_device_names_length]);
         remote_device_names_length++;
     }
 
@@ -1515,6 +1537,16 @@ static void init_BLE(void)
 
     ESP_LOGI(TAG, "Midi BLE init start");
 
+    // get the channel to use
+    midi_serial_channel = control_get_config_item_int(CONFIG_ITEM_MIDI_CHANNEL);
+
+    // adjust to zero based indexing
+    if (midi_serial_channel > 0)
+    {
+        midi_serial_channel--;
+    }
+
+        
     ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT));
 
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
@@ -1554,7 +1586,7 @@ static void init_BLE(void)
         return;
     }
 
-    if (control_get_config_bt_mode() == BT_MODE_CENTRAL)
+    if (control_get_config_item_int(CONFIG_ITEM_BT_MODE) == BT_MODE_CENTRAL)
     {
         // Client stuff
         ESP_LOGI(GATTC_TAG, "Enabling BT Client mode");
@@ -1576,7 +1608,7 @@ static void init_BLE(void)
             return;
         }
     }
-    else if (control_get_config_bt_mode() == BT_MODE_PERIPHERAL)
+    else if (control_get_config_item_int(CONFIG_ITEM_BT_MODE) == BT_MODE_PERIPHERAL)
     {
         // Server stuff
         ESP_LOGI(GATTS_TAG, "Enabling BT Server mode");

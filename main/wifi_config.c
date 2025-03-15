@@ -47,7 +47,6 @@ limitations under the License.
 #include "usb_comms.h"
 #include "task_priorities.h"
 #include "tonex_params.h"
-#include "i2c-lcd.h"
 
 #define WIFI_CONFIG_TASK_STACK_SIZE   (3 * 1024)
 
@@ -295,13 +294,10 @@ static void wifi_build_params_json(void)
         json_gen_obj_set_float(&pWebConfig->jstr, "Max", param_ptr[loop].Max);
         json_gen_obj_set_string(&pWebConfig->jstr, "NAME", param_ptr[loop].Name);
 
-        // //display efeitos
-        //lcd_effect();
-         
         json_gen_pop_object(&pWebConfig->jstr);
 
         // don't hog the param pointer                    
-        tonex_params_release_locked_access(); //mutex
+        tonex_params_release_locked_access();
     }
     
     // add the } for PARAMS
@@ -338,28 +334,54 @@ static void wifi_build_config_json(void)
     json_gen_obj_set_string(&pWebConfig->jstr, "CMD", "GETCONFIG");
 
     // add config
-    json_gen_obj_set_int(&pWebConfig->jstr, "BT_MODE", control_get_config_bt_mode());
-    json_gen_obj_set_int(&pWebConfig->jstr, "BT_CHOC_EN", control_get_config_bt_mvave_choc_enable());
-    json_gen_obj_set_int(&pWebConfig->jstr, "BT_MD1_EN", control_get_config_bt_xvive_md1_enable());
-    json_gen_obj_set_int(&pWebConfig->jstr, "BT_CUST_EN", control_get_config_bt_custom_enable());
+    json_gen_obj_set_int(&pWebConfig->jstr, "BT_MODE", control_get_config_item_int(CONFIG_ITEM_BT_MODE));
+    json_gen_obj_set_int(&pWebConfig->jstr, "BT_CHOC_EN", control_get_config_item_int(CONFIG_ITEM_MV_CHOC_ENABLE));
+    json_gen_obj_set_int(&pWebConfig->jstr, "BT_MD1_EN", control_get_config_item_int(CONFIG_ITEM_XV_MD1_ENABLE));
+    json_gen_obj_set_int(&pWebConfig->jstr, "BT_CUST_EN", control_get_config_item_int(CONFIG_ITEM_CUSTOM_BT_ENABLE));
 
-    control_get_config_custom_bt_name(str_val);
+    control_get_config_item_string(CONFIG_ITEM_BT_CUSTOM_NAME, str_val);
     json_gen_obj_set_string(&pWebConfig->jstr, "BT_CUST_NAME", str_val);
 
-    json_gen_obj_set_int(&pWebConfig->jstr, "TOGGLE_BYPASS", control_get_config_double_toggle());
-    json_gen_obj_set_int(&pWebConfig->jstr, "S_MIDI_EN", control_get_config_midi_serial_enable());
-    json_gen_obj_set_int(&pWebConfig->jstr, "S_MIDI_CH", control_get_config_midi_channel());
-    json_gen_obj_set_int(&pWebConfig->jstr, "FOOTSW_MODE", control_get_config_footswitch_mode());
-    json_gen_obj_set_int(&pWebConfig->jstr, "BT_MIDI_CC", control_get_config_enable_bt_midi_CC());
-    json_gen_obj_set_int(&pWebConfig->jstr, "WIFI_MODE", control_get_config_wifi_mode());
-    json_gen_obj_set_int(&pWebConfig->jstr, "SCREEN_ROT", control_get_config_screen_rotation());
+    json_gen_obj_set_int(&pWebConfig->jstr, "TOGGLE_BYPASS", control_get_config_item_int(CONFIG_ITEM_TOGGLE_BYPASS));
+    json_gen_obj_set_int(&pWebConfig->jstr, "S_MIDI_EN", control_get_config_item_int(CONFIG_ITEM_MIDI_ENABLE));
+    json_gen_obj_set_int(&pWebConfig->jstr, "S_MIDI_CH", control_get_config_item_int(CONFIG_ITEM_MIDI_CHANNEL));
+    json_gen_obj_set_int(&pWebConfig->jstr, "FOOTSW_MODE", control_get_config_item_int(CONFIG_ITEM_FOOTSWITCH_MODE));
+    json_gen_obj_set_int(&pWebConfig->jstr, "BT_MIDI_CC", control_get_config_item_int(CONFIG_ITEM_ENABLE_BT_MIDI_CC));
+    json_gen_obj_set_int(&pWebConfig->jstr, "WIFI_MODE", control_get_config_item_int(CONFIG_ITEM_WIFI_MODE));
+    json_gen_obj_set_int(&pWebConfig->jstr, "WIFI_POWER", control_get_config_item_int(CONFIG_ITEM_WIFI_TX_POWER));
+    json_gen_obj_set_int(&pWebConfig->jstr, "SCREEN_ROT", control_get_config_item_int(CONFIG_ITEM_SCREEN_ROTATION));
 
-    control_get_config_wifi_ssid(str_val);
+    control_get_config_item_string(CONFIG_ITEM_WIFI_SSID, str_val);
     json_gen_obj_set_string(&pWebConfig->jstr, "WIFI_SSID", str_val);
 
-    // might be best not to send password??
-    control_get_config_wifi_password(str_val);
+    control_get_config_item_string(CONFIG_ITEM_WIFI_PASSWORD, str_val);
     json_gen_obj_set_string(&pWebConfig->jstr, "WIFI_PW", str_val);
+
+    control_get_config_item_string(CONFIG_ITEM_MDNS_NAME, str_val);
+    json_gen_obj_set_string(&pWebConfig->jstr, "MDNS_NAME", str_val);
+
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_PS_LAYOUT", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_PRESET_LAYOUT));
+
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES1_SW", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT1_SW));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES1_CC", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT1_CC));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES1_V1", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT1_VAL1));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES1_V2", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT1_VAL2));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES2_SW", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT2_SW));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES2_CC", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT2_CC));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES2_V1", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT2_VAL1));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES2_V2", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT2_VAL2));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES3_SW", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT3_SW));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES3_CC", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT3_CC));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES3_V1", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT3_VAL1));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES3_V2", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT3_VAL2));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES4_SW", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT4_SW));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES4_CC", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT4_CC));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES4_V1", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT4_VAL1));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES4_V2", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT4_VAL2));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES5_SW", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT5_SW));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES5_CC", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT5_CC));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES5_V1", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT5_VAL1));
+    json_gen_obj_set_int(&pWebConfig->jstr, "EXTFS_ES5_V2", control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT5_VAL2));
 
     // add the }
     json_gen_end_object(&pWebConfig->jstr);
@@ -544,57 +566,171 @@ static esp_err_t ws_handler(httpd_req_t *req)
 
                         if (json_obj_get_int(&pWebConfig->jctx, "S_MIDI_EN", &int_val) == OS_SUCCESS)
                         {
-                            control_set_config_serial_midi_enable(int_val);
+                            control_set_config_item_int(CONFIG_ITEM_MIDI_ENABLE, int_val);
                         }
 
                         if (json_obj_get_int(&pWebConfig->jctx, "S_MIDI_CH", &int_val) == OS_SUCCESS)
                         {
-                            control_set_config_serial_midi_channel(int_val);        
+                            control_set_config_item_int(CONFIG_ITEM_MIDI_CHANNEL, int_val);        
                         }
 
                         if (json_obj_get_int(&pWebConfig->jctx, "TOGGLE_BYPASS", &int_val) == OS_SUCCESS)
                         {
-                            control_set_config_toggle_bypass(int_val);
+                            control_set_config_item_int(CONFIG_ITEM_TOGGLE_BYPASS, int_val);
                         }
                         
                         if (json_obj_get_int(&pWebConfig->jctx, "BT_MODE", &int_val) == OS_SUCCESS)
                         {
-                            control_set_config_btmode(int_val);
+                            control_set_config_item_int(CONFIG_ITEM_BT_MODE, int_val);
                         }
 
                         if (json_obj_get_int(&pWebConfig->jctx, "BT_CHOC_EN", &int_val) == OS_SUCCESS)
                         {
-                            control_set_config_mv_choc_enable(int_val);
+                            control_set_config_item_int(CONFIG_ITEM_MV_CHOC_ENABLE, int_val);
                         }
 
                         if (json_obj_get_int(&pWebConfig->jctx, "BT_MD1_EN", &int_val) == OS_SUCCESS)
                         {
-                            control_set_config_xv_md1_enable(int_val);
+                            control_set_config_item_int(CONFIG_ITEM_XV_MD1_ENABLE, int_val);
                         }
+
+                        // pause a little to allow control task a chance to process    
+                        vTaskDelay(pdMS_TO_TICKS(250));    
 
                         if (json_obj_get_int(&pWebConfig->jctx, "BT_CUST_EN", &int_val) == OS_SUCCESS)
                         {
-                            control_set_config_bt_custom_enable(int_val);
+                            control_set_config_item_int(CONFIG_ITEM_CUSTOM_BT_ENABLE, int_val);
                         }
                         
                         if (json_obj_get_string(&pWebConfig->jctx, "BT_CUST_NAME", str_val, sizeof(str_val)) == OS_SUCCESS)
                         {
-                            control_set_config_custom_bt_name(str_val);
+                            control_set_config_item_string(CONFIG_ITEM_BT_CUSTOM_NAME, str_val);
                         }
 
                         if (json_obj_get_int(&pWebConfig->jctx, "BT_MIDI_CC", &int_val) == OS_SUCCESS)
                         {
-                            control_set_config_enable_bt_midi_CC(int_val);
+                            control_set_config_item_int(CONFIG_ITEM_ENABLE_BT_MIDI_CC, int_val);
                         }
                         
                         if (json_obj_get_int(&pWebConfig->jctx, "FOOTSW_MODE", &int_val) == OS_SUCCESS)
                         {
-                            control_set_config_footswitch_mode(int_val);
+                            control_set_config_item_int(CONFIG_ITEM_FOOTSWITCH_MODE, int_val);
                         }
 
                         if (json_obj_get_int(&pWebConfig->jctx, "SCREEN_ROT", &int_val) == OS_SUCCESS)
                         {
-                            control_set_screen_rotation(int_val);
+                            control_set_config_item_int(CONFIG_ITEM_SCREEN_ROTATION, int_val);
+                        }
+                                    
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_PS_LAYOUT", &int_val) == OS_SUCCESS)
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_PRESET_LAYOUT, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES1_SW", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT1_SW, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES1_CC", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT1_CC, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES1_V1", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT1_VAL1, int_val);
+                        }
+
+                        // pause a little to allow control task a chance to process    
+                        vTaskDelay(pdMS_TO_TICKS(250));    
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES1_V2", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT1_VAL2, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES2_SW", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT2_SW, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx,  "EXTFS_ES2_CC", &int_val) == OS_SUCCESS)
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT2_CC, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES2_V1", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT2_VAL1, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES2_V2", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT2_VAL2, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES3_SW", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT3_SW, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES3_CC", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT3_CC, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES3_V1", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT3_VAL1, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES3_V2", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT3_VAL2, int_val);
+                        }
+
+                        // pause a little to allow control task a chance to process    
+                        vTaskDelay(pdMS_TO_TICKS(250));    
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES4_SW", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT4_SW, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES4_CC", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT4_CC, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES4_V1", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT4_VAL1, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES4_V2", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT4_VAL2, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES5_SW", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT5_SW, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES5_CC", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT5_CC, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES5_V1", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT5_VAL1, int_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "EXTFS_ES5_V2", &int_val) == OS_SUCCESS) 
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT5_VAL2, int_val);
                         }
 
                         vTaskDelay(pdMS_TO_TICKS(250));
@@ -609,17 +745,27 @@ static esp_err_t ws_handler(httpd_req_t *req)
 
                         if (json_obj_get_int(&pWebConfig->jctx, "WIFI_MODE", &int_val) == OS_SUCCESS)
                         {
-                            control_set_config_wifi_mode(int_val);
+                            control_set_config_item_int(CONFIG_ITEM_WIFI_MODE, int_val);
                         }
 
                         if (json_obj_get_string(&pWebConfig->jctx, "WIFI_SSID", str_val, sizeof(str_val)) == OS_SUCCESS)
                         {
-                            control_set_config_wifi_ssid(str_val);
+                            control_set_config_item_string(CONFIG_ITEM_WIFI_SSID, str_val);
                         }
 
                         if (json_obj_get_string(&pWebConfig->jctx, "WIFI_PW", str_val, sizeof(str_val)) == OS_SUCCESS)
                         {
-                            control_set_config_wifi_password(str_val);
+                            control_set_config_item_string(CONFIG_ITEM_WIFI_PASSWORD, str_val);
+                        }
+
+                        if (json_obj_get_int(&pWebConfig->jctx, "WIFI_POWER", &int_val) == OS_SUCCESS)
+                        {
+                            control_set_config_item_int(CONFIG_ITEM_WIFI_TX_POWER, int_val);
+                        }
+
+                        if (json_obj_get_string(&pWebConfig->jctx, "MDNS_NAME", str_val, sizeof(str_val)) == OS_SUCCESS)
+                        {
+                            control_set_config_item_string(CONFIG_ITEM_MDNS_NAME, str_val);
                         }
 
                         vTaskDelay(pdMS_TO_TICKS(250));
@@ -701,6 +847,8 @@ static esp_err_t ws_handler(httpd_req_t *req)
                         }
                     }                    
                 }
+
+                json_parse_end(&pWebConfig->jctx);
             }
         }
 
@@ -997,8 +1145,8 @@ static void wifi_init_sta(void)
     };
 
     // get credentials from config
-    control_get_config_wifi_ssid(pWebConfig->wifi_ssid);
-    control_get_config_wifi_password(pWebConfig->wifi_password);
+    control_get_config_item_string(CONFIG_ITEM_WIFI_SSID, pWebConfig->wifi_ssid);
+    control_get_config_item_string(CONFIG_ITEM_WIFI_PASSWORD, pWebConfig->wifi_password);
 
     // set SSID and password
     strcpy((char*)wifi_config.sta.ssid, pWebConfig->wifi_ssid);
@@ -1069,8 +1217,8 @@ static void wifi_init_softap(void)
     };
     
     // get credentials from config
-    control_get_config_wifi_ssid(pWebConfig->wifi_ssid);
-    control_get_config_wifi_password(pWebConfig->wifi_password);
+    control_get_config_item_string(CONFIG_ITEM_WIFI_SSID, pWebConfig->wifi_ssid);
+    control_get_config_item_string(CONFIG_ITEM_WIFI_PASSWORD, pWebConfig->wifi_password);
 
     // set SSID and password
     strcpy((char*)wifi_config.ap.ssid, pWebConfig->wifi_ssid);
@@ -1098,6 +1246,8 @@ static void wifi_init_softap(void)
 *****************************************************************************/
 void start_mdns_service()
 {
+    char mdns_name[MAX_MDNS_NAME];
+
     //initialize mDNS service
     esp_err_t err = mdns_init();
     if (err) 
@@ -1106,8 +1256,9 @@ void start_mdns_service()
         return;
     }
 
-    mdns_hostname_set("tonex");
-    mdns_instance_name_set("tonex");
+    control_get_config_item_string(CONFIG_ITEM_MDNS_NAME, mdns_name);
+    mdns_hostname_set(mdns_name);
+    mdns_instance_name_set(mdns_name);
     mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0);
 }
 
@@ -1138,7 +1289,7 @@ static void wifi_config_task(void *arg)
     tWiFiMessage message;
     uint32_t tick_timer;
     uint8_t wifi_kill_checked = 0;
-    uint8_t wifi_mode = control_get_config_wifi_mode();
+    uint8_t wifi_mode = control_get_config_item_int(CONFIG_ITEM_WIFI_MODE);
 
     ESP_LOGI(TAG, "Wifi config task start");
 
@@ -1178,6 +1329,35 @@ static void wifi_config_task(void *arg)
         } break;
     }
 
+    // set the WiFi TX power. Some platforms seem to have stability issues on max power
+    switch (control_get_config_item_int(CONFIG_ITEM_WIFI_TX_POWER))
+    {
+        case WIFI_TX_POWER_100:        
+        {
+            esp_wifi_set_max_tx_power(80);
+        } break;
+
+        case WIFI_TX_POWER_75:
+        {
+            esp_wifi_set_max_tx_power(66);
+        } break;
+
+        case WIFI_TX_POWER_50:
+        {
+            esp_wifi_set_max_tx_power(52);
+        } break;
+
+        case WIFI_TX_POWER_25:
+        default:
+        {
+            esp_wifi_set_max_tx_power(28);
+        } break;
+    }
+
+    int8_t power;
+    esp_wifi_get_max_tx_power(&power);
+    ESP_LOGI(TAG, "WiFi Tx power: %d dbm", (int)(power * 0.25f));
+
     start_mdns_service();
 
     // start web server
@@ -1193,7 +1373,7 @@ static void wifi_config_task(void *arg)
             if (wifi_kill_checked == 0)
             {
                 // allow WiFi AP to run for 60 seconds
-                if ((xTaskGetTickCount() - tick_timer) >= 120000)
+                if ((xTaskGetTickCount() - tick_timer) >= 60000)
                 {
                     wifi_kill_checked = 1;
 

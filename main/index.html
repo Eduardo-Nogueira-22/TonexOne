@@ -116,7 +116,6 @@
           height: 500px;
         }
 
-
         .form-switch .form-check-input {
             height: 20px;
             width: 42px;
@@ -195,6 +194,50 @@
             padding-top: 3%;
         }
 
+        .fxtab {
+          background-color: #2A2A2A;
+          width: 100%; 
+          max-width: 370px; 
+        }
+
+        /* Style the buttons inside the tab */
+        .fxtab button {
+          display: block;
+          background-color: inherit;
+          color: #C0C0C0;
+          padding: 10px 10px;
+          width: 100%;
+          border: none;
+          outline: none;
+          text-align: left;
+          cursor: pointer;
+          transition: 0.3s;
+          font-size: 14px;
+        }
+
+        /* Change background color of buttons on hover */
+        .fxtab button:hover {
+          background-color: #513D2B;
+        }
+
+        /* Create an active/current "tab button" class */
+        .fxtab button.active {
+          background-color: #513D2B;
+          color: #FB9230;
+        }
+
+        /* Style the tab content */
+        .fxtabcontent {         
+          padding: 0px 6px;
+          border-left: none;
+        }
+
+        /* Style the buttons inside the tab */
+        .fxtablink {
+          color: #C0C0C0;
+          padding: 10px 10px;
+        }
+
     </style>
 
     <script>   
@@ -264,8 +307,8 @@
         const TONEX_PARAM_MODEL_GAIN = 20;
         const TONEX_PARAM_MODEL_VOLUME = 21;
         const TONEX_PARAM_MODEX_MIX = 22;
-        const TONEX_PARAM_MODEL_SW2 = 23;
-        const TONEX_PARAM_MODEL_CABINET = 24;
+        const TONEX_PARAM_MODEL_CABINET_ENABLE = 23;
+        const TONEX_PARAM_VIR_CABINET = 24;
         const TONEX_PARAM_VIR_CABINET_MODEL = 25;
         const TONEX_PARAM_VIR_RESO = 26;
         const TONEX_PARAM_VIR_MIC_1 = 27;
@@ -364,8 +407,17 @@
             // Get the element with id="defaultOpen" and click on it
             document.getElementById("defaultOpen").click();
             
+            document.getElementById("defaultFX").click();
+
             initWebSocket();
             pageTimer = setInterval("pageTimerEvent();", 750);
+
+   			inputs = document.getElementsByTagName('input');
+			for (i = 0; i < inputs.length; i++) {
+				if (inputs[i].type == "range") {
+					inputs[i].oninput = function(e){showValue(e.target);};
+				}
+            }	
         }
 
         function pageTimerEvent(){
@@ -425,13 +477,15 @@
             processReturnCmd(received_data);        
         }
 
-        function configureParamRange(objname, value, min, max) {
+        function configureParamRange(objname, value, min, max, step=1) {
             //console.log("configureParamRange");
             //console.log(objname);
             var paramrange = document.getElementById(objname);
             paramrange.min = min;
             paramrange.max = max;
             paramrange.value = value;
+            paramrange.step = step;
+			showValue(paramrange);
         }
 
         function configureParamSwitch(objname, value) {
@@ -532,7 +586,7 @@
                                 break;
 
                             case TONEX_PARAM_COMP_THRESHOLD:
-                                configureParamRange("cp_thresh", value, min, max);
+                                configureParamRange("cp_thresh", value, min, max, 0.5);
                                 setParamData("cp_thresh", parseInt(key));
                                 break;
 
@@ -553,37 +607,37 @@
                                 break;
 
                             case TONEX_PARAM_EQ_BASS:
-                                configureParamRange("eq_bass", value, min, max);
+                                configureParamRange("eq_bass", value, min, max, 0.1);
                                 setParamData("eq_bass", parseInt(key));
                                 break;
 
                             case TONEX_PARAM_EQ_BASS_FREQ:
-                                configureParamRange("eq_bassf", value, min, max);
+                                configureParamRange("eq_bassf", value, min, max, 15);
                                 setParamData("eq_bassf", parseInt(key));                                
                                 break;
 
                             case TONEX_PARAM_EQ_MID:
-                                configureParamRange("eq_mid", value, min, max);
+                                configureParamRange("eq_mid", value, min, max, 0.1);
                                 setParamData("eq_mid", parseInt(key));
                                 break;
 
                             case TONEX_PARAM_EQ_MIDQ:
-                                configureParamRange("eq_midq", value, min, max);
+                                configureParamRange("eq_midq", value, min, max, 0.05);
                                 setParamData("eq_midq", parseInt(key));                            
                                 break;
 
                             case TONEX_PARAM_EQ_MID_FREQ:
-                                configureParamRange("eq_midf", value, min, max);
+                                configureParamRange("eq_midf", value, min, max, 50);
                                 setParamData("eq_midf", parseInt(key));
                                 break;
 
                             case TONEX_PARAM_EQ_TREBLE:
-                                configureParamRange("eq_treble", value, min, max);
+                                configureParamRange("eq_treble", value, min, max, 0.1);
                                 setParamData("eq_treble", parseInt(key));
                                 break;
 
                             case TONEX_PARAM_EQ_TREBLE_FREQ:
-                                configureParamRange("eq_treblef", value, min, max);
+                                configureParamRange("eq_treblef", value, min, max, 100);
                                 setParamData("eq_treblef", parseInt(key));
                                 break;
                             
@@ -594,15 +648,17 @@
                                 break;
 
                             case TONEX_PARAM_MODEL_SW1:
+                                configureParamSwitch("am_sw1", value);
+                                setParamData("am_sw1", parseInt(key));
                                 break;
 
                             case TONEX_PARAM_MODEL_GAIN:
-                                configureParamRange("am_gain", value, min, max);
+                                configureParamRange("am_gain", value, min, max, 0.1);
                                 setParamData("am_gain", parseInt(key));
                                 break;
 
                             case TONEX_PARAM_MODEL_VOLUME:
-                                configureParamRange("am_volume", value, min, max);
+                                configureParamRange("am_volume", value, min, max, 0.1);
                                 setParamData("am_volume", parseInt(key));
                                 break;
 
@@ -616,10 +672,12 @@
                             //    setParamData("am_presence", parseInt(key));
                             //    break;
 
-                            case TONEX_PARAM_MODEL_SW2:
+                            case TONEX_PARAM_MODEL_CABINET_ENABLE:
+                                configureParamSwitch("am_sw2", value);
+                                setParamData("am_sw2", parseInt(key));
                                 break;                            
 
-                            case TONEX_PARAM_MODEL_CABINET:
+                            case TONEX_PARAM_VIR_CABINET:
                                 configureParamSwitch("am_caben", value);
                                 setParamData("am_caben", parseInt(key));
                                 break;
@@ -680,14 +738,14 @@
 
                             case TONEX_PARAM_REVERB_SPRING1_TIME:
                                 if (getSelectValue("rv_model") == TONEX_REVERB_SPRING_1) {
-                                    configureParamRange("rv_time", value, min, max);
+                                    configureParamRange("rv_time", value, min, max, 0.5);
                                     setParamData("rv_time", parseInt(key));
                                 }
                                 break;
 
                             case TONEX_PARAM_REVERB_SPRING1_PREDELAY:
                                 if (getSelectValue("rv_model") == TONEX_REVERB_SPRING_1) {
-                                    configureParamRange("rv_predelay", value, min, max);
+                                    configureParamRange("rv_predelay", value, min, max, 10);
                                     setParamData("rv_predelay", parseInt(key));
                                 }
                                 break;
@@ -708,14 +766,14 @@
 
                             case TONEX_PARAM_REVERB_SPRING2_TIME:
                                 if (getSelectValue("rv_model") == TONEX_REVERB_SPRING_2) {
-                                    configureParamRange("rv_time", value, min, max);
+                                    configureParamRange("rv_time", value, min, max, 0.5);
                                     setParamData("rv_time", parseInt(key));
                                 }
                                 break;
 
                             case TONEX_PARAM_REVERB_SPRING2_PREDELAY:
                                 if (getSelectValue("rv_model") == TONEX_REVERB_SPRING_2) {
-                                    configureParamRange("rv_predelay", value, min, max);
+                                    configureParamRange("rv_predelay", value, min, max, 10);
                                     setParamData("rv_predelay", parseInt(key));
                                 }
                                 break;
@@ -736,14 +794,14 @@
 
                             case TONEX_PARAM_REVERB_SPRING3_TIME:
                                 if (getSelectValue("rv_model") == TONEX_REVERB_SPRING_3) {
-                                    configureParamRange("rv_time", value, min, max);
+                                    configureParamRange("rv_time", value, min, max, 0.5);
                                     setParamData("rv_time", parseInt(key));
                                 }
                                 break;
                             
                             case TONEX_PARAM_REVERB_SPRING3_PREDELAY:
                                 if (getSelectValue("rv_model") == TONEX_REVERB_SPRING_3) {
-                                    configureParamRange("rv_predelay", value, min, max);
+                                    configureParamRange("rv_predelay", value, min, max, 10);
                                     setParamData("rv_predelay", parseInt(key));
                                 }
                                 break;
@@ -764,14 +822,14 @@
 
                             case TONEX_PARAM_REVERB_SPRING4_TIME:
                                 if (getSelectValue("rv_model") == TONEX_REVERB_SPRING_4) {
-                                    configureParamRange("rv_time", value, min, max);
+                                    configureParamRange("rv_time", value, min, max, 0.5);
                                     setParamData("rv_time", parseInt(key));
                                 }
                                 break;
 
                             case TONEX_PARAM_REVERB_SPRING4_PREDELAY:
                                 if (getSelectValue("rv_model") == TONEX_REVERB_SPRING_4) {
-                                    configureParamRange("rv_predelay", value, min, max);
+                                    configureParamRange("rv_predelay", value, min, max, 10);
                                     setParamData("rv_predelay", parseInt(key));
                                 }
                                 break;
@@ -792,14 +850,14 @@
 
                             case TONEX_PARAM_REVERB_ROOM_TIME:
                                 if (getSelectValue("rv_model") == TONEX_REVERB_ROOM) {
-                                    configureParamRange("rv_time", value, min, max);
+                                    configureParamRange("rv_time", value, min, max, 0.5);
                                     setParamData("rv_time", parseInt(key));
                                 }
                                 break;
 
                             case TONEX_PARAM_REVERB_ROOM_PREDELAY:
                                 if (getSelectValue("rv_model") == TONEX_REVERB_ROOM) {
-                                    configureParamRange("rv_predelay", value, min, max);
+                                    configureParamRange("rv_predelay", value, min, max, 10);
                                     setParamData("rv_predelay", parseInt(key));
                                 }
                                 break;
@@ -820,14 +878,14 @@
 
                             case TONEX_PARAM_REVERB_PLATE_TIME:
                                 if (getSelectValue("rv_model") == TONEX_REVERB_PLATE) {
-                                    configureParamRange("rv_time", value, min, max);
+                                    configureParamRange("rv_time", value, min, max, 0.5);
                                     setParamData("rv_time", parseInt(key));
                                 }
                                 break;
 
                             case TONEX_PARAM_REVERB_PLATE_PREDELAY:
                                 if (getSelectValue("rv_model") == TONEX_REVERB_PLATE) {
-                                    configureParamRange("rv_predelay", value, min, max);
+                                    configureParamRange("rv_predelay", value, min, max, 10);
                                     setParamData("rv_predelay", parseInt(key));
                                 }
                                 break;
@@ -919,7 +977,7 @@
 
                             case TONEX_PARAM_MODULATION_CHORUS_RATE:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_CHORUS) {
-                                    configureParamRange("mo_param1", value, min, max);
+                                    configureParamRange("mo_param1", value, min, max, 0.02);
                                     setParamData("mo_param1", parseInt(key));
                                 }
                                 break;
@@ -933,7 +991,7 @@
 
                             case TONEX_PARAM_MODULATION_CHORUS_LEVEL:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_CHORUS) {
-                                    configureParamRange("mo_param3", value, min, max);
+                                    configureParamRange("mo_param3", value, min, max, 0.1);
                                     setParamData("mo_param3", parseInt(key));
                                 }
                                 break;
@@ -950,14 +1008,14 @@
 
                             case TONEX_PARAM_MODULATION_TREMOLO_RATE:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_TREMOLO) {
-                                    configureParamRange("mo_param1", value, min, max);
+                                    configureParamRange("mo_param1", value, min, max, 0.1);
                                     setParamData("mo_param1", parseInt(key));
                                 }
                                 break;
 
                             case TONEX_PARAM_MODULATION_TREMOLO_SHAPE:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_TREMOLO) {
-                                    configureParamRange("mo_param2", value, min, max);
+                                    configureParamRange("mo_param2", value, min, max, 0.1);
                                     setParamData("mo_param2", parseInt(key));
                                 }
                                 break;
@@ -971,7 +1029,7 @@
 
                             case TONEX_PARAM_MODULATION_TREMOLO_LEVEL:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_TREMOLO) {
-                                    configureParamRange("mo_param4", value, min, max);
+                                    configureParamRange("mo_param4", value, min, max, 0.1);
                                     setParamData("mo_param4", parseInt(key));
                                 }
                                 break;
@@ -988,7 +1046,7 @@
 
                             case TONEX_PARAM_MODULATION_PHASER_RATE:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_PHASER) {
-                                    configureParamRange("mo_param1", value, min, max);
+                                    configureParamRange("mo_param1", value, min, max, 0.02);
                                     setParamData("mo_param1", parseInt(key));
                                 }
                                 break;
@@ -1002,7 +1060,7 @@
 
                             case TONEX_PARAM_MODULATION_PHASER_LEVEL:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_PHASER) {
-                                    configureParamRange("mo_param3", value, min, max);
+                                    configureParamRange("mo_param3", value, min, max, 0.1);
                                     setParamData("mo_param3", parseInt(key));
                                 }
                                 break;
@@ -1019,7 +1077,7 @@
 
                             case TONEX_PARAM_MODULATION_FLANGER_RATE:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_FLANGER) {
-                                    configureParamRange("mo_param1", value, min, max);
+                                    configureParamRange("mo_param1", value, min, max, 0.02);
                                     setParamData("mo_param1", parseInt(key));
                                 }
                                 break;
@@ -1040,7 +1098,7 @@
 
                             case TONEX_PARAM_MODULATION_FLANGER_LEVEL:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_FLANGER) {
-                                    configureParamRange("mo_param4", value, min, max);
+                                    configureParamRange("mo_param4", value, min, max, 0.1);
                                     setParamData("mo_param4", parseInt(key));
                                 }
                                 break;
@@ -1057,14 +1115,14 @@
 
                             case TONEX_PARAM_MODULATION_ROTARY_SPEED:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_ROTARY) {
-                                    configureParamRange("mo_param1", value, min, max);
+                                    configureParamRange("mo_param1", value, min, max, 5);
                                     setParamData("mo_param1", parseInt(key));
                                 }
                                 break;
 
                             case TONEX_PARAM_MODULATION_ROTARY_RADIUS:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_ROTARY) {
-                                    configureParamRange("mo_param2", value, min, max);
+                                    configureParamRange("mo_param2", value, min, max, 5);
                                     setParamData("mo_param2", parseInt(key));
                                 }
                                 break;
@@ -1078,7 +1136,7 @@
 
                             case TONEX_PARAM_MODULATION_ROTARY_LEVEL:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_ROTARY) {
-                                    configureParamRange("mo_param4", value, min, max);
+                                    configureParamRange("mo_param4", value, min, max, 0.1);
                                     setParamData("mo_param4", parseInt(key));
                                 }
                                 break;
@@ -1111,7 +1169,7 @@
 
                             case TONEX_PARAM_DELAY_DIGITAL_TIME:
                                 if (getSelectValue("dl_model") == TONEX_DELAY_DIGITAL) {
-                                    configureParamRange("dl_time", value, min, max);
+                                    configureParamRange("dl_time", value, min, max, 10);
                                     setParamData("dl_time", parseInt(key));
                                 }
                                 break;
@@ -1149,7 +1207,7 @@
 
                             case TONEX_PARAM_DELAY_TAPE_TIME:
                                 if (getSelectValue("dl_model") == TONEX_DELAY_TAPE) {
-                                    configureParamRange("dl_time", value, min, max);
+                                    configureParamRange("dl_time", value, min, max, 10);
                                     setParamData("dl_time", parseInt(key));
                                 }
                                 break;
@@ -1190,10 +1248,40 @@
                     configureParamSelect("midichannel", data['S_MIDI_CH']);
                     configureParamSelect("footmode", data['FOOTSW_MODE']);
                     configureParamSwitch("btmidicc", data['BT_MIDI_CC']);
-                    configureParamSelect("wifimode", data['WIFI_MODE']);
+                    configureParamSelect("wifimode", data['WIFI_MODE']);                    
+                    configureParamSelect("wifitxpower", data['WIFI_POWER']);                
                     setParamValue("wifiname", data['WIFI_SSID']);
-                    setParamValue("wifipassword", data['WIFI_PW']);
+                    setParamValue("wifipassword", data['WIFI_PW']);                    
+                    setParamValue("mdnsname", data['MDNS_NAME']);
+
                     configureParamSelect("screenrot", data['SCREEN_ROT']);
+
+                    configureParamSelect("extfslay", data['EXTFS_PS_LAYOUT']);
+                                        
+                    configureParamSelect("extfx1sw", data['EXTFS_ES1_SW']);
+                    setParamValue("extfx1cc", data['EXTFS_ES1_CC']);
+                    setParamValue("extfx1v1", data['EXTFS_ES1_V1']);
+                    setParamValue("extfx1v2", data['EXTFS_ES1_V2']);
+
+                    configureParamSelect("extfx2sw", data['EXTFS_ES2_SW']);
+                    setParamValue("extfx2cc", data['EXTFS_ES2_CC']);
+                    setParamValue("extfx2v1", data['EXTFS_ES2_V1']);
+                    setParamValue("extfx2v2", data['EXTFS_ES2_V2']);
+
+                    configureParamSelect("extfx3sw", data['EXTFS_ES3_SW']);
+                    setParamValue("extfx3cc", data['EXTFS_ES3_CC']);
+                    setParamValue("extfx3v1", data['EXTFS_ES3_V1']);
+                    setParamValue("extfx3v2", data['EXTFS_ES3_V2']);
+
+                    configureParamSelect("extfx4sw", data['EXTFS_ES4_SW']);
+                    setParamValue("extfx4cc", data['EXTFS_ES4_CC']);
+                    setParamValue("extfx4v1", data['EXTFS_ES4_V1']);
+                    setParamValue("extfx4v2", data['EXTFS_ES4_V2']);
+
+                    configureParamSelect("extfx5sw", data['EXTFS_ES5_SW']);
+                    setParamValue("extfx5cc", data['EXTFS_ES5_CC']);
+                    setParamValue("extfx5v1", data['EXTFS_ES5_V1']);
+                    setParamValue("extfx5v2", data['EXTFS_ES5_V2']);
                     break;   
                 
                 case 'GETPRESET':
@@ -1221,6 +1309,22 @@
             evt.currentTarget.className += " active";
         }
         
+        function openFX(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("fxtabcontent");
+            
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("fxtablink");
+            
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
         function setToast(msg) {
             // Get the toast DIV
             var t_html = '<div class="toast-container">';
@@ -1267,6 +1371,32 @@
                 var btmidiccen = btmidicc ? 1 : 0;
                                    
                 var screenrot = document.getElementById("screenrot").value;                
+                var extfslay = document.getElementById("extfslay").value;  
+
+                var extfx1sw = document.getElementById("extfx1sw").value;  
+                var extfx1cc = document.getElementById("extfx1cc").value;  
+                var extfx1v1 = document.getElementById("extfx1v1").value;  
+                var extfx1v2 = document.getElementById("extfx1v2").value;  
+
+                var extfx2sw = document.getElementById("extfx2sw").value;  
+                var extfx2cc = document.getElementById("extfx2cc").value;  
+                var extfx2v1 = document.getElementById("extfx2v1").value;  
+                var extfx2v2 = document.getElementById("extfx2v2").value;  
+
+                var extfx3sw = document.getElementById("extfx3sw").value;  
+                var extfx3cc = document.getElementById("extfx3cc").value;  
+                var extfx3v1 = document.getElementById("extfx3v1").value;  
+                var extfx3v2 = document.getElementById("extfx3v2").value;  
+
+                var extfx4sw = document.getElementById("extfx4sw").value;  
+                var extfx4cc = document.getElementById("extfx4cc").value;  
+                var extfx4v1 = document.getElementById("extfx4v1").value;  
+                var extfx4v2 = document.getElementById("extfx4v2").value;  
+
+                var extfx5sw = document.getElementById("extfx5sw").value;  
+                var extfx5cc = document.getElementById("extfx5cc").value;  
+                var extfx5v1 = document.getElementById("extfx5v1").value;  
+                var extfx5v2 = document.getElementById("extfx5v2").value;  
 
                 sendWS({"CMD": "SETCONFIG", 
                         "BT_MODE": parseInt(btmode),
@@ -1279,7 +1409,28 @@
                         "S_MIDI_CH": parseInt(midichannel),
                         "FOOTSW_MODE": parseInt(footmode),
                         "BT_MIDI_CC": btmidiccen,
-                        "SCREEN_ROT": parseInt(screenrot)
+                        "SCREEN_ROT": parseInt(screenrot),
+                        "EXTFS_PS_LAYOUT": parseInt(extfslay),                        
+                        "EXTFS_ES1_SW": parseInt(extfx1sw),
+                        "EXTFS_ES1_CC": parseInt(extfx1cc),
+                        "EXTFS_ES1_V1": parseInt(extfx1v1),
+                        "EXTFS_ES1_V2": parseInt(extfx1v2),
+                        "EXTFS_ES2_SW": parseInt(extfx2sw),
+                        "EXTFS_ES2_CC": parseInt(extfx2cc),
+                        "EXTFS_ES2_V1": parseInt(extfx2v1),
+                        "EXTFS_ES2_V2": parseInt(extfx2v2),
+                        "EXTFS_ES3_SW": parseInt(extfx3sw),
+                        "EXTFS_ES3_CC": parseInt(extfx3cc),
+                        "EXTFS_ES3_V1": parseInt(extfx3v1),
+                        "EXTFS_ES3_V2": parseInt(extfx3v2),
+                        "EXTFS_ES4_SW": parseInt(extfx4sw),
+                        "EXTFS_ES4_CC": parseInt(extfx4cc),
+                        "EXTFS_ES4_V1": parseInt(extfx4v1),
+                        "EXTFS_ES4_V2": parseInt(extfx4v2),
+                        "EXTFS_ES5_SW": parseInt(extfx5sw),
+                        "EXTFS_ES5_CC": parseInt(extfx5cc),
+                        "EXTFS_ES5_V1": parseInt(extfx5v1),
+                        "EXTFS_ES5_V2": parseInt(extfx5v2)
                     });  
       
                 setToast('Settings saved.<br>Rebooting now');
@@ -1290,15 +1441,19 @@
             if (SocketConnected === 1) {
                 // get values
                 var wifi_mode = document.getElementById("wifimode").value;
+                var wifitxpower = document.getElementById("wifitxpower").value;                
                 var wifi_ssid = document.getElementById("wifiname").value;
                 var wifi_pw = document.getElementById("wifipassword").value;
+                var mdnsname = document.getElementById("mdnsname").value;                
                 
                 console.log('WiFi config send');
                 
                 sendWS({"CMD": "SETWIFI", 
                         "WIFI_MODE": parseInt(wifi_mode),
+                        "WIFI_POWER": parseInt(wifitxpower),
                         "WIFI_SSID": wifi_ssid,
-                        "WIFI_PW": wifi_pw});
+                        "WIFI_PW": wifi_pw,
+                        "MDNS_NAME": mdnsname});
                         
                 setToast('WiFi Config Saved');
             }
@@ -1333,6 +1488,15 @@
                         "VALUE": param_value});                        
             }
         }
+		function showValue(e) {
+			let s = e.previousElementSibling;
+			if (s.tagName == "LABEL") {
+                let t = s.innerText;
+                let i = t.indexOf(":");
+                if (i>0) s.innerText = t.substr(0, i);
+                s.innerText += " : " + parseFloat(e.value);	
+			}				
+		}
      
     </script>
         
@@ -1377,6 +1541,7 @@
       <button class="tablinks" onclick="openTab(event, 'Bluetooth')">BT</button>
       <button class="tablinks" onclick="openTab(event, 'Midi')">Midi</button>
       <button class="tablinks" onclick="openTab(event, 'Miscellaneous')">Misc</button>
+      <button class="tablinks" onclick="openTab(event, 'External')">Ext</button>
       <button class="tablinks" onclick="openTab(event, 'WiFi')">WiFi</button>
     </div>
 
@@ -1704,7 +1869,21 @@
                         <div class="col">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" data-index-number="dummy" onchange="onParamChange(event)" type="checkbox" role="switch" value="" id="am_caben">
-                                <label class="form-check-label" for="am_caben">Cab</label>
+                                <label class="form-check-label" for="am_caben">VIR Cab</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" data-index-number="dummy" onchange="onParamChange(event)" type="checkbox" role="switch" value="" id="am_sw1">
+                                <label class="form-check-label" for="am_sw1">??</label>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" data-index-number="dummy" onchange="onParamChange(event)" type="checkbox" role="switch" value="" id="am_sw2">
+                                <label class="form-check-label" for="am_sw2">Cab</label>
                             </div>
                         </div>
                     </div>
@@ -1868,7 +2047,239 @@
             </p>
         </div>
     </div>
-    
+
+    <div id="External" class="tabcontent">
+        <div class="col py-3 text-white">
+        <h5 class="selected_text">External Footswitches</h5>
+            <p class="lead">     
+                <div class="container">
+                    <label class="form-check-label" for="extfslay">Preset Switch Layout</label>
+                    <select class="form-select select_style" id="extfslay">
+                        <option value="0" class="style6">1x3</option>
+                        <option value="1" class="style6" Selected>1x4</option>
+                        <option value="2" class="style6">1x5</option>     
+                        <option value="3" class="style6">2x3</option>     
+                        <option value="4" class="style6">2x4</option>     
+                        <option value="5" class="style6">2x5A</option>     
+                        <option value="6" class="style6">2x5B</option>     
+                        <option value="7" class="style6">2x6A</option>     
+                        <option value="8" class="style6">2x6B</option>     
+                    </select>                           
+                </div>
+                <br> 
+                <br> 
+                <div class="fxtab btn-group" role="group">
+                    <button class="fxtablink" id="defaultFX" onclick="openFX(event, 'FX1')">FX1</button>
+                    <button class="fxtablink" onclick="openFX(event, 'FX2')">FX2</button>
+                    <button class="fxtablink" onclick="openFX(event, 'FX3')">FX3</button>
+                    <button class="fxtablink" onclick="openFX(event, 'FX4')">FX4</button>
+                    <button class="fxtablink" onclick="openFX(event, 'FX5')">FX5</button>
+                </div>
+                <br> 
+                <div id="FX1" class="fxtabcontent">
+                    <div class="container">
+                        <label class="form-check-label" for="extfx1sw">Foot Switch Number</label>
+                        <select class="form-select select_style" id="extfx1sw">
+                            <option value="255" class="style6" Selected>Disabled</option>
+                            <option value="0" class="style6">1</option>
+                            <option value="1" class="style6">2</option>     
+                            <option value="2" class="style6">3</option>     
+                            <option value="3" class="style6">4</option>     
+                            <option value="4" class="style6">5</option>     
+                            <option value="5" class="style6">6</option>     
+                            <option value="6" class="style6">7</option>     
+                            <option value="7" class="style6">8</option>  
+                            <option value="8" class="style6">9</option>
+                            <option value="9" class="style6">10</option>     
+                            <option value="10" class="style6">11</option>     
+                            <option value="11" class="style6">12</option>     
+                            <option value="12" class="style6">13</option>     
+                            <option value="13" class="style6">14</option>     
+                            <option value="14" class="style6">15</option>     
+                            <option value="15" class="style6">16</option>        
+                        </select>                           
+                    </div> 
+                    <br>                 
+                    <div class="container">
+                        <label class="form-check-label" for="extfx1cc">Control Change Number</label>
+                        <input type="number" id="extfx1cc" name="extfx1cc" class="form-control text_entry_style" maxlength="3" size="3" value="0">                
+                    </div>
+                    <br>
+                    <div class="container">
+                        <label class="form-check-label" for="extfx1v1">Midi Value 1</label>
+                        <input type="number" id="extfx1v1" name="extfx1v1" class="form-control text_entry_style" maxlength="3" size="3" value="0">
+                    </div>
+                    <br>
+                    <div class="container">
+                        <label class="form-check-label" for="extfx1v2">Midi Value 2</label>
+                        <input type="number" id="extfx1v2" name="extfx1v2" class="form-control text_entry_style" maxlength="3" size="3" value="0">
+                    </div>
+                </div>
+                <div id="FX2" class="fxtabcontent">
+                    <div class="container">
+                        <label class="form-check-label" for="extfx2sw">Foot Switch Number</label>
+                        <select class="form-select select_style" id="extfx2sw">
+                            <option value="255" class="style6" Selected>Disabled</option>
+                            <option value="0" class="style6">1</option>
+                            <option value="1" class="style6">2</option>     
+                            <option value="2" class="style6">3</option>     
+                            <option value="3" class="style6">4</option>     
+                            <option value="4" class="style6">5</option>     
+                            <option value="5" class="style6">6</option>     
+                            <option value="6" class="style6">7</option>     
+                            <option value="7" class="style6">8</option>  
+                            <option value="8" class="style6">9</option>
+                            <option value="9" class="style6">10</option>     
+                            <option value="10" class="style6">11</option>     
+                            <option value="11" class="style6">12</option>     
+                            <option value="12" class="style6">13</option>     
+                            <option value="13" class="style6">14</option>     
+                            <option value="14" class="style6">15</option>     
+                            <option value="15" class="style6">16</option>        
+                        </select>                           
+                    </div> 
+                    <br>                 
+                    <div class="container">
+                        <label class="form-check-label" for="extfx2cc">Control Change Number</label>
+                        <input type="number" id="extfx2cc" name="extfx2cc" class="form-control text_entry_style" maxlength="3" size="3" value="0">                
+                    </div>
+                    <br>
+                    <div class="container">
+                        <label class="form-check-label" for="extfx2v1">Midi Value 1</label>
+                        <input type="number" id="extfx2v1" name="extfx2v1" class="form-control text_entry_style" maxlength="3" size="3" value="0">
+                    </div>
+                    <br>
+                    <div class="container">
+                        <label class="form-check-label" for="extfx2v2">Midi Value 2</label>
+                        <input type="number" id="extfx2v2" name="extfx2v2" class="form-control text_entry_style" maxlength="3" size="3" value="0">
+                    </div>
+                </div>
+                <div id="FX3" class="fxtabcontent">
+                    <div class="container">
+                        <label class="form-check-label" for="extfx3sw">Foot Switch Number</label>
+                        <select class="form-select select_style" id="extfx3sw">
+                            <option value="255" class="style6" Selected>Disabled</option>
+                            <option value="0" class="style6">1</option>
+                            <option value="1" class="style6">2</option>     
+                            <option value="2" class="style6">3</option>     
+                            <option value="3" class="style6">4</option>     
+                            <option value="4" class="style6">5</option>     
+                            <option value="5" class="style6">6</option>     
+                            <option value="6" class="style6">7</option>     
+                            <option value="7" class="style6">8</option>  
+                            <option value="8" class="style6">9</option>
+                            <option value="9" class="style6">10</option>     
+                            <option value="10" class="style6">11</option>     
+                            <option value="11" class="style6">12</option>     
+                            <option value="12" class="style6">13</option>     
+                            <option value="13" class="style6">14</option>     
+                            <option value="14" class="style6">15</option>     
+                            <option value="15" class="style6">16</option>        
+                        </select>                           
+                    </div> 
+                    <br>                 
+                    <div class="container">
+                        <label class="form-check-label" for="extfx3cc">Control Change Number</label>
+                        <input type="number" id="extfx3cc" name="extfx3cc" class="form-control text_entry_style" maxlength="3" size="3" value="0">                
+                    </div>
+                    <br>
+                    <div class="container">
+                        <label class="form-check-label" for="extfx3v1">Midi Value 1</label>
+                        <input type="number" id="extfx3v1" name="extfx3v1" class="form-control text_entry_style" maxlength="3" size="3" value="0">
+                    </div>
+                    <br>
+                    <div class="container">
+                        <label class="form-check-label" for="extfx3v2">Midi Value 2</label>
+                        <input type="number" id="extfx3v2" name="extfx3v2" class="form-control text_entry_style" maxlength="3" size="3" value="0">
+                    </div>
+                </div>
+                <div id="FX4" class="fxtabcontent">
+                    <div class="container">
+                        <label class="form-check-label" for="extfx4sw">Foot Switch Number</label>
+                        <select class="form-select select_style" id="extfx4sw">
+                            <option value="255" class="style6" Selected>Disabled</option>
+                            <option value="0" class="style6">1</option>
+                            <option value="1" class="style6">2</option>     
+                            <option value="2" class="style6">3</option>     
+                            <option value="3" class="style6">4</option>     
+                            <option value="4" class="style6">5</option>     
+                            <option value="5" class="style6">6</option>     
+                            <option value="6" class="style6">7</option>     
+                            <option value="7" class="style6">8</option>  
+                            <option value="8" class="style6">9</option>
+                            <option value="9" class="style6">10</option>     
+                            <option value="10" class="style6">11</option>     
+                            <option value="11" class="style6">12</option>     
+                            <option value="12" class="style6">13</option>     
+                            <option value="13" class="style6">14</option>     
+                            <option value="14" class="style6">15</option>     
+                            <option value="15" class="style6">16</option>        
+                        </select>                           
+                    </div> 
+                    <br>                 
+                    <div class="container">
+                        <label class="form-check-label" for="extfx4cc">Control Change Number</label>
+                        <input type="number" id="extfx4cc" name="extfx4cc" class="form-control text_entry_style" maxlength="3" size="3" value="0">                
+                    </div>
+                    <br>
+                    <div class="container">
+                        <label class="form-check-label" for="extfx4v1">Midi Value 1</label>
+                        <input type="number" id="extfx4v1" name="extfx4v1" class="form-control text_entry_style" maxlength="3" size="3" value="0">
+                    </div>
+                    <br>
+                    <div class="container">
+                        <label class="form-check-label" for="extfx4v2">Midi Value 2</label>
+                        <input type="number" id="extfx4v2" name="extfx4v2" class="form-control text_entry_style" maxlength="3" size="3" value="0">
+                    </div>
+                </div>
+                <div id="FX5" class="fxtabcontent">
+                    <div class="container">
+                        <label class="form-check-label" for="extfx5sw">Foot Switch Number</label>
+                        <select class="form-select select_style" id="extfx5sw">
+                            <option value="255" class="style6" Selected>Disabled</option>
+                            <option value="0" class="style6">1</option>
+                            <option value="1" class="style6">2</option>     
+                            <option value="2" class="style6">3</option>     
+                            <option value="3" class="style6">4</option>     
+                            <option value="4" class="style6">5</option>     
+                            <option value="5" class="style6">6</option>     
+                            <option value="6" class="style6">7</option>     
+                            <option value="7" class="style6">8</option>  
+                            <option value="8" class="style6">9</option>
+                            <option value="9" class="style6">10</option>     
+                            <option value="10" class="style6">11</option>     
+                            <option value="11" class="style6">12</option>     
+                            <option value="12" class="style6">13</option>     
+                            <option value="13" class="style6">14</option>     
+                            <option value="14" class="style6">15</option>     
+                            <option value="15" class="style6">16</option>        
+                        </select>                           
+                    </div> 
+                    <br>                 
+                    <div class="container">
+                        <label class="form-check-label" for="extfx5cc">Control Change Number</label>
+                        <input type="number" id="extfx5cc" name="extfx5cc" class="form-control text_entry_style" maxlength="3" size="3" value="0">                
+                    </div>
+                    <br>
+                    <div class="container">
+                        <label class="form-check-label" for="extfx5v1">Midi Value 1</label>
+                        <input type="number" id="extfx5v1" name="extfx5v1" class="form-control text_entry_style" maxlength="3" size="3" value="0">
+                    </div>
+                    <br>
+                    <div class="container">
+                        <label class="form-check-label" for="extfx5v2">Midi Value 2</label>
+                        <input type="number" id="extfx5v2" name="extfx5v2" class="form-control text_entry_style" maxlength="3" size="3" value="0">
+                    </div>
+                </div>
+                <br>
+                <br>
+                <div class="container">
+                    <button type="button" onclick="saveSettings()" class="btn btn-success">Save and Reboot</button>
+                </div>
+            </p>
+        </div>
+    </div>
+
     <div id="WiFi" class="tabcontent">
         <div class="col py-3 text-white">
             <h5 class="selected_text">WiFi</h5>
@@ -1879,6 +2290,16 @@
                         <option value="0" class="style6" selected>Access Point Timed</option>
                         <option value="1" class="style6">Station</option>
                         <option value="2" class="style6">Access Point</option>     
+                    </select>                           
+                </div>
+                <br>
+                <div class="container">
+                    <label class="form-check-label" for="wifitxpower">WiFi Transmit Power</label>
+                    <select class="form-select select_style" id="wifitxpower">
+                        <option value="0" class="style6" selected>25%</option>
+                        <option value="1" class="style6">50%</option>
+                        <option value="2" class="style6">75%</option>     
+                        <option value="3" class="style6">100%</option>     
                     </select>                           
                 </div>
                 <div class="container">
@@ -1895,6 +2316,11 @@
                     <label class="form-check-label" for="wifipassword">WiFi Password</label>
                     <input type="password" id="wifipassword" name="wifipassword" class="form-control text_entry_style" maxlength="40" size="40" value="WiFi Password">
                 </div>
+                <br>
+                <div class="container">
+                    <label class="form-check-label" for="mdnsname">MDNS Name</label>
+                    <input type="text" id="mdnsname" name="mdnsname" class="form-control text_entry_style" maxlength="32" size="32" value="tonex">
+                </div>                
                 <br>
                 <br>
                 <div class="container">

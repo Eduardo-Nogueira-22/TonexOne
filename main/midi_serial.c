@@ -213,7 +213,7 @@ void midi_serial_init(void)
     memset((void*)midi_serial_buffer, 0, sizeof(midi_serial_buffer));
 
     // get the channel to use
-    midi_serial_channel = control_get_config_midi_channel();
+    midi_serial_channel = control_get_config_item_int(CONFIG_ITEM_MIDI_CHANNEL);
 
     // adjust to zero based indexing
     if (midi_serial_channel > 0)

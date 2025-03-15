@@ -57,6 +57,7 @@ limitations under the License.
 #include "usb_comms.h"
 #include "usb_tonex_one.h"
 #include "control.h"
+
 #include "wifi_config.h"
 #include "tonex_params.h"
 #include "i2c-lcd.h"
@@ -65,7 +66,6 @@ static const char *TAG = "app_TonexOne";
 
 // preset name is proceeded by this byte sequence:
 static const uint8_t ToneOnePresetByteMarker[] = {0xB9, 0x04, 0xB9, 0x02, 0xBC, 0x21};
-
 
 // lengths of preset name and drive character
 #define TONEX_ONE_RESP_OFFSET_PRESET_NAME_LEN       32
@@ -514,10 +514,10 @@ static esp_err_t usb_tonex_one_set_preset_in_slot(uint16_t preset, Slot newSlot,
     message[7] = (TonexData->Message.PedalData.StateDataLength >> 8) & 0xFF;
 
     // force pedal to Stomp mode. 0 here = A/B mode, 1 = stomp mode
-    TonexData->Message.PedalData.StateData[14] = 1;
+    TonexData->Message.PedalData.StateData[14] = 0x88;  // was 1 in older f/w
     
     // check if setting same preset twice will set bypass
-    if (control_get_config_double_toggle())
+    if (control_get_config_item_int(CONFIG_ITEM_TOGGLE_BYPASS))
     {
         if (selectSlot && (TonexData->Message.CurrentSlot == newSlot) && (preset == usb_tonex_one_get_current_active_preset()))
         {
@@ -581,6 +581,9 @@ static esp_err_t usb_tonex_one_set_preset_in_slot(uint16_t preset, Slot newSlot,
 
     // do framing
     framed_length = addFraming(TxBuffer, sizeof(message) + TonexData->Message.PedalData.StateDataLength, FramedBuffer);
+
+    //ESP_LOGI(TAG, "State Data after changes - framed");
+    //ESP_LOG_BUFFER_HEXDUMP(TAG, FramedBuffer, framed_length, ESP_LOG_INFO);
 
     // send it
     return usb_tonex_one_transmit(FramedBuffer, framed_length);
@@ -1167,7 +1170,6 @@ static esp_err_t usb_tonex_one_process_single_message(uint8_t* data, uint16_t le
                     
                     // make sure we are showing the correct preset as active                
                     control_sync_preset_details(current_preset, preset_name);
-                    
                     lcd_put_cur(0, 0);
                     lcd_send_string("                    ");
                     lcd_put_cur(0, 0);
@@ -1179,11 +1181,12 @@ static esp_err_t usb_tonex_one_process_single_message(uint8_t* data, uint16_t le
                     lcd_send_string("Preset =     ");
                     lcd_put_cur(2, 0);
                     lcd_send_string(buffer);
-
                     // read the preset params
                     usb_tonex_one_parse_preset_parameters(data, length);
 
-          
+                    // signal to refresh param UI
+                    //UI_RefreshParameterValues();
+
                     // update web UI
                     wifi_request_sync(WIFI_SYNC_TYPE_PARAMS, NULL, NULL);
 
@@ -1311,7 +1314,7 @@ void usb_tonex_one_handle(class_driver_t* driver_obj)
                     case USB_COMMAND_MODIFY_PARAMETER:
                     {
                         usb_tonex_one_modify_parameter(message.Payload, message.PayloadFloat);
-                        usb_tonex_one_send_parameters();                                          
+                        usb_tonex_one_send_parameters();
                     } break;
                 }
             }

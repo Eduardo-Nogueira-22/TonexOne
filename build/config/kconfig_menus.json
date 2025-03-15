@@ -6433,6 +6433,16 @@
                         "children": [],
                         "depends_on": "<choice TONEX_CONTROLLER_HARDWARE_PLATFORM>",
                         "help": null,
+                        "id": "TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_169TOUCH",
+                        "name": "TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_169TOUCH",
+                        "range": null,
+                        "title": "Waveshare 1.69 Touch",
+                        "type": "bool"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": "<choice TONEX_CONTROLLER_HARDWARE_PLATFORM>",
+                        "help": null,
                         "id": "TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_ZERO",
                         "name": "TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_ZERO",
                         "range": null,
@@ -6457,6 +6467,16 @@
                         "name": "TONEX_CONTROLLER_HARDWARE_PLATFORM_M5ATOMS3R",
                         "range": null,
                         "title": "M5Stack AtomS3R",
+                        "type": "bool"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": "<choice TONEX_CONTROLLER_HARDWARE_PLATFORM>",
+                        "help": null,
+                        "id": "TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43DEVONLY",
+                        "name": "TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43DEVONLY",
+                        "range": null,
+                        "title": "Waveshare 4.3 Development board",
                         "type": "bool"
                     }
                 ],
@@ -6496,6 +6516,36 @@
                 "name": "TONEX_CONTROLLER_SKINS",
                 "title": "Tonex Controller Skins included (applies to Display Type only)",
                 "type": "choice"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "Enable this option if the platform has a display",
+                "id": "TONEX_CONTROLLER_HAS_DISPLAY",
+                "name": "TONEX_CONTROLLER_HAS_DISPLAY",
+                "range": null,
+                "title": "LCD display is used",
+                "type": "bool"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "Enable this option if the platform has a small display",
+                "id": "TONEX_CONTROLLER_DISPLAY_SMALL",
+                "name": "TONEX_CONTROLLER_DISPLAY_SMALL",
+                "range": null,
+                "title": "Small LCD display is used",
+                "type": "bool"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "Enable this option if the platform has footswitches directly connected to GPIO",
+                "id": "TONEX_CONTROLLER_GPIO_FOOTSWITCHES",
+                "name": "TONEX_CONTROLLER_GPIO_FOOTSWITCHES",
+                "range": null,
+                "title": "Footswitches are directly connected to GPIO",
+                "type": "bool"
             },
             {
                 "children": [],

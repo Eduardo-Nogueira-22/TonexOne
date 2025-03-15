@@ -10,6 +10,9 @@ menu "Tonex Controller Configuration"
         config TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_169
             bool "Waveshare 1.69"
 
+        config TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_169TOUCH
+            bool "Waveshare 1.69 Touch"
+
         config TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_ZERO
             bool "Waveshare Zero"
             
@@ -17,7 +20,11 @@ menu "Tonex Controller Configuration"
             bool "Espressif DevKitC"
             
         config TONEX_CONTROLLER_HARDWARE_PLATFORM_M5ATOMS3R
-            bool "M5Stack AtomS3R"            
+            bool "M5Stack AtomS3R"   
+
+        config TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43DEVONLY            
+            bool "Waveshare 4.3 Development board"   
+        
     endchoice
 
     choice TONEX_CONTROLLER_SKINS
@@ -30,7 +37,25 @@ menu "Tonex Controller Configuration"
         config TONEX_CONTROLLER_SKINS_PEDAL
             bool "Pedal Skins"
     endchoice    
-
+    
+    config TONEX_CONTROLLER_HAS_DISPLAY
+       bool "LCD display is used"
+        default "n"
+        help
+            Enable this option if the platform has a display
+    
+    config TONEX_CONTROLLER_DISPLAY_SMALL
+       bool "Small LCD display is used"
+        default "n"
+        help
+            Enable this option if the platform has a small display
+    
+    config TONEX_CONTROLLER_GPIO_FOOTSWITCHES
+       bool "Footswitches are directly connected to GPIO"
+        default "y"
+        help
+            Enable this option if the platform has footswitches directly connected to GPIO
+            
     config EXAMPLE_DOUBLE_FB
         bool "Use double Frame Buffer"
         default "n"

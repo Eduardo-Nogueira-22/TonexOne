@@ -81,6 +81,47 @@ enum Skins
     SKIN_MAX        // must be last
 };
 
+enum ConfigItems
+{
+    CONFIG_ITEM_BT_MODE,
+    CONFIG_ITEM_MV_CHOC_ENABLE,
+    CONFIG_ITEM_XV_MD1_ENABLE,
+    CONFIG_ITEM_CUSTOM_BT_ENABLE,
+    CONFIG_ITEM_BT_CUSTOM_NAME,
+    CONFIG_ITEM_MIDI_ENABLE,
+    CONFIG_ITEM_MIDI_CHANNEL,
+    CONFIG_ITEM_TOGGLE_BYPASS,
+    CONFIG_ITEM_FOOTSWITCH_MODE,
+    CONFIG_ITEM_ENABLE_BT_MIDI_CC,
+    CONFIG_ITEM_WIFI_MODE,
+    CONFIG_ITEM_WIFI_SSID,
+    CONFIG_ITEM_WIFI_PASSWORD,
+    CONFIG_ITEM_SCREEN_ROTATION,
+    CONFIG_ITEM_WIFI_TX_POWER,
+    CONFIG_ITEM_MDNS_NAME,
+    CONFIG_ITEM_EXT_FOOTSW_PRESET_LAYOUT,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT1_SW,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT1_CC,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT1_VAL1,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT1_VAL2,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT2_SW,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT2_CC,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT2_VAL1,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT2_VAL2,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT3_SW,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT3_CC,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT3_VAL1,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT3_VAL2,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT4_SW,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT4_CC,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT4_VAL1,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT4_VAL2,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT5_SW,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT5_CC,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT5_VAL1,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT5_VAL2
+};
+
 enum BluetoothModes
 {
     BT_MODE_DISABLED,
@@ -113,7 +154,60 @@ enum ScreenRotation
     SCREEN_ROTATION_MAX,
 };
 
-#define MAX_WIFI_SSID_PW       65   
+enum WiFiTxPower
+{
+    WIFI_TX_POWER_25,
+    WIFI_TX_POWER_50,
+    WIFI_TX_POWER_75,    
+    WIFI_TX_POWER_100
+};
+
+enum FootswitchLayouts
+{
+    FOOTSWITCH_LAYOUT_1X3,                // 1 row of 3 switches, bank via 1+2 and 2+3
+    FOOTSWITCH_LAYOUT_1X4,                // 1 row of 4 switches, bank via 1+2 and 3+4
+    FOOTSWITCH_LAYOUT_1X5,                // 1 row of 5 switches, bank via 1+2 and 4+5
+    FOOTSWITCH_LAYOUT_2X3,                // 2 row2 of 3 switches, bank via 1+2 and 2+3
+    FOOTSWITCH_LAYOUT_2X4,                // 2 rows of 4 switches, bank via 1+2 and 3+4
+    FOOTSWITCH_LAYOUT_2X5A,               // 2 rows of 5 switches, bank via 1+2 and 4+5
+    FOOTSWITCH_LAYOUT_2X5B,               // 2 rows of 5 switches, bank via 5 and 10
+    FOOTSWITCH_LAYOUT_2X6A,               // 2 rows of 6 switches, bank via 1+2 and 5+6
+    FOOTSWITCH_LAYOUT_2X6B,               // 2 rows of 6 switches, bank via 6 and 12
+    FOOTSWITCH_LAYOUT_LAST
+};
+
+enum IOExpanderPins
+{
+    IO_EXPANDER_PIN_1,
+    IO_EXPANDER_PIN_2,
+    IO_EXPANDER_PIN_3,
+    IO_EXPANDER_PIN_4,
+    IO_EXPANDER_PIN_5,
+    IO_EXPANDER_PIN_6,
+    IO_EXPANDER_PIN_7,
+    IO_EXPANDER_PIN_8,
+    IO_EXPANDER_PIN_9,
+    IO_EXPANDER_PIN_10,
+    IO_EXPANDER_PIN_11,
+    IO_EXPANDER_PIN_12,
+    IO_EXPANDER_PIN_13,
+    IO_EXPANDER_PIN_14,
+    IO_EXPANDER_PIN_15,
+    IO_EXPANDER_PIN_16
+};
+
+typedef struct __attribute__ ((packed)) 
+{
+    uint8_t Switch;
+    uint8_t CC;
+    uint8_t Value_1;
+    uint8_t Value_2;
+} tExternalFootswitchEffectConfig;
+
+#define MAX_WIFI_SSID_PW                        65   
+#define MAX_MDNS_NAME                           32
+#define MAX_EXTERNAL_EFFECT_FOOTSWITCHES        5
+#define SWITCH_NOT_USED                         0xFF
 
 // thread safe public API
 void control_request_preset_up(void);
@@ -131,32 +225,10 @@ void control_set_user_text(char* text);
 
 // config API
 void control_set_default_config(void);
-void control_set_config_btmode(uint32_t status);
-void control_set_config_mv_choc_enable(uint32_t status);
-void control_set_config_xv_md1_enable(uint32_t status);
-void control_set_config_bt_custom_enable(uint32_t status);
-void control_set_config_custom_bt_name(char* name);
-void control_set_config_serial_midi_enable(uint32_t status);
-void control_set_config_serial_midi_channel(uint32_t status);
-void control_set_config_toggle_bypass(uint32_t status);
-void control_set_config_footswitch_mode(uint32_t mode);
-void control_set_config_enable_bt_midi_CC(uint32_t status);
-void control_set_config_wifi_mode(uint32_t mode);
-void control_set_config_wifi_ssid(char* name);
-void control_set_config_wifi_password(char* name);
-void control_set_screen_rotation(uint32_t rot);
+void control_set_config_item_int(uint32_t item, uint32_t status);
+void control_set_config_item_string(uint32_t item, char* name);
+void control_set_config_item_object(uint32_t item, void* object);
 
-uint8_t control_get_config_bt_mode(void);
-uint8_t control_get_config_bt_mvave_choc_enable(void);
-uint8_t control_get_config_bt_xvive_md1_enable(void);
-uint8_t control_get_config_bt_custom_enable(void);
-void control_get_config_custom_bt_name(char* name);
-uint8_t control_get_config_double_toggle(void);
-uint8_t control_get_config_midi_serial_enable(void);
-uint8_t control_get_config_midi_channel(void);
-uint8_t control_get_config_footswitch_mode(void);
-uint8_t control_get_config_enable_bt_midi_CC(void);
-uint8_t control_get_config_wifi_mode(void);
-void control_get_config_wifi_ssid(char* name);
-void control_get_config_wifi_password(char* name);
-uint8_t control_get_config_screen_rotation(void);
+uint32_t control_get_config_item_int(uint32_t item);
+void control_get_config_item_string(uint32_t item, char* name);
+void control_get_config_item_object(uint32_t item, void* object);

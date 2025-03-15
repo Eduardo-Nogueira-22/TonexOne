@@ -588,11 +588,11 @@ void footswitch_task(void *arg)
     vTaskDelay(pdMS_TO_TICKS(1000));
 
     // others, get the currently configured mode from web config
-    mode = control_get_config_footswitch_mode();
+    //mode = control_get_config_footswitch_mode();
 
     while (1)
     {
-        switch (mode)
+        switch (1)
         {
         case FOOTSWITCH_MODE_DUAL_UP_DOWN:
         default:
