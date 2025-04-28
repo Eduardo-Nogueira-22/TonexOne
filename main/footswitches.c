@@ -43,12 +43,13 @@ limitations under the License.
 #include "i2c-lcd.h"
 #include "usb_tonex_one.h"
 #include "tonex_params.h"
+#include "control.h"
 
 #define FOOTSWITCH_TASK_STACK_SIZE (3 * 1024)
 #define FOOTSWITCH_SAMPLE_COUNT 5 // 20 msec per sample
-#define BANK_MODE_BUTTONS 6
+#define BANK_MODE_BUTTONS 8
 #define BANK_MAXIMUM (MAX_PRESETS / BANK_MODE_BUTTONS)
-#define BUTTON_FACTORY_RESET_TIME 500 // * 20 msec = 10 secs
+#define BUTTON_FACTORY_RESET_TIME 400 // * 20 msec = 10 secs
 
 #define DEBOUNCE_TIME_MS 50       // Tempo de debounce (50ms)
 #define DOUBLE_CLICK_TIME_MS 500  // Tempo máximo entre cliques para duplo clique (500ms)
@@ -342,9 +343,7 @@ static void footswitch_handle_quad_banked(void)
         }else if (st_button == 2){
             if (FootswitchControl.current_bank < BANK_MAXIMUM)
             {
-                // bank up
-                FootswitchControl.current_bank++;
-                ESP_LOGI(TAG, "Footswitch banked up %d", FootswitchControl.current_bank);
+               ///nothing
             }         
         }else if (st_button == 3){
             tonex_params_get_locked_access(&param_ptr);
@@ -368,7 +367,9 @@ static void footswitch_handle_quad_banked(void)
             binary_val |= 8;
 
         }else if (st_button == 2){
-            //NOTHING        
+                // bank up
+                FootswitchControl.current_bank++;
+                ESP_LOGI(TAG, "Footswitch banked up %d", FootswitchControl.current_bank);        
         }else if (st_button == 3){
             tonex_params_get_locked_access(&param_ptr);
             param=param_ptr[TONEX_PARAM_REVERB_ENABLE].Value;
@@ -417,6 +418,64 @@ static void footswitch_handle_quad_banked(void)
         // usb_set_preset(6);
         binary_val |= 32;
     }
+
+    read_footswitch_input(FOOTSWITCH_7, &value);
+    if (value == 0)
+    {
+        st_button=detect_button_click(FOOTSWITCH_7);
+        if (st_button == 1){
+            binary_val |= 64;
+
+        }else if (st_button == 2){
+           //noting         
+        }else if (st_button == 3){
+            //noting
+        }
+        st_button=0;
+    }
+    read_footswitch_input(FOOTSWITCH_8, &value);
+    if (value == 0)
+    {
+        control_trigger_tap_tempo( );     
+        st_button=detect_button_click(FOOTSWITCH_8);
+        if (st_button == 1){
+           //noting     
+        }else if (st_button == 2){
+            //noting      
+        }else if (st_button == 3){
+            binary_val |= 128;
+        }
+        st_button=0;
+    }
+    // read_footswitch_input(FOOTSWITCH_9, &value);
+    // if (value == 0)
+    // {
+    //     st_button=detect_button_click(FOOTSWITCH_9);
+    //     if (st_button == 1){
+    //         binary_val |= 256;
+
+    //     }else if (st_button == 2){
+    //        //noting         
+    //     }else if (st_button == 3){
+    //         //noting
+    //     }
+    //     st_button=0;
+    // }
+    // read_footswitch_input(FOOTSWITCH_10, &value);
+    // if (value == 0)
+    // {
+    //     st_button=detect_button_click(FOOTSWITCH_10);
+    //     if (st_button == 1){
+    //         binary_val |= 512;
+
+    //     }else if (st_button == 2){
+    //        //noting         
+    //     }else if (st_button == 3){
+    //         //noting
+    //     }
+    //     st_button=0;
+    // }
+
 
     // handle state
     switch (FootswitchControl.state)
@@ -486,6 +545,14 @@ static void footswitch_handle_quad_banked(void)
                 else if ((FootswitchControl.index_pending & 0x20) != 0)
                 {
                     new_preset += 5;
+                }
+                else if ((FootswitchControl.index_pending & 0x40) != 0)
+                {
+                    new_preset += 6;
+                }
+                else if ((FootswitchControl.index_pending & 0x80) != 0)
+                {
+                    new_preset += 7;
                 }
 
                 // set the preset
@@ -594,50 +661,52 @@ void footswitch_task(void *arg)
     {
         switch (1)
         {
-        case FOOTSWITCH_MODE_DUAL_UP_DOWN:
+        case FOOTSWITCH_LAYOUT_1X2:
         default:
         {
             // run dual mode next/previous
-            footswitch_handle_dual_mode();
+            //footswitch_handle_dual_mode();
+            footswitch_handle_quad_banked();
         }
         break;
 
-        case FOOTSWITCH_MODE_QUAD_BANKED:
+        case FOOTSWITCH_LAYOUT_1X4:
         {
             // run 4 switch with bank up/down
             footswitch_handle_quad_banked();
         }
         break;
 
-        case FOOTSWITCH_MODE_QUAD_BINARY:
+        case FOOTSWITCH_LAYOUT_1X4_BINARY:
         {
             // run 4 switch binary mode
-            footswitch_handle_quad_binary();
+            //footswitch_handle_quad_binary();
+            footswitch_handle_quad_banked();
         }
         break;
         }
 
         // check for button held for data reset
-        if (read_footswitch_input(FOOTSWITCH_1, &value))
-        {
-            if (value == 0)
-            {
-                reset_timer++;
+        // if (read_footswitch_input(FOOTSWITCH_1, &value))
+        // {
+        //     if (value == 0)
+        //     {
+        //         reset_timer++;
 
-                if (reset_timer > BUTTON_FACTORY_RESET_TIME)
-                {
-                    ESP_LOGI(TAG, "Config Reset to default");
-                    control_set_default_config();
+        //         if (reset_timer > BUTTON_FACTORY_RESET_TIME)
+        //         {
+        //             ESP_LOGI(TAG, "Config Reset to default");
+        //             control_set_default_config();
 
-                    // save and reboot
-                    control_save_user_data(1);
-                }
-            }
-            else
-            {
-                reset_timer = 0;
-            }
-        }
+        //             // save and reboot
+        //             control_save_user_data(1);
+        //         }
+        //     }
+        //     else
+        //     {
+        //         reset_timer = 0;
+        //     }
+        // }
 
         // handle leds from this task, to save wasting ram on another task for it
         //leds_handle();
@@ -661,7 +730,7 @@ void footswitches_init(void)
    // init GPIO
     gpio_config_t gpio_config_struct;
 
-    gpio_config_struct.pin_bit_mask = (((uint64_t)1 << FOOTSWITCH_1) | ((uint64_t)1 << FOOTSWITCH_2) | ((uint64_t)1 << FOOTSWITCH_3) | ((uint64_t)1 << FOOTSWITCH_4) | ((uint64_t)1 << FOOTSWITCH_5) | ((uint64_t)1 << FOOTSWITCH_6));
+    gpio_config_struct.pin_bit_mask = (((uint64_t)1 << FOOTSWITCH_1) | ((uint64_t)1 << FOOTSWITCH_2) | ((uint64_t)1 << FOOTSWITCH_3) | ((uint64_t)1 << FOOTSWITCH_4) | ((uint64_t)1 << FOOTSWITCH_5) | ((uint64_t)1 << FOOTSWITCH_6) | ((uint64_t)1 << FOOTSWITCH_7) | ((uint64_t)1 << FOOTSWITCH_8));
     gpio_config_struct.mode = GPIO_MODE_INPUT;
     gpio_config_struct.pull_up_en = GPIO_PULLUP_ENABLE;
     gpio_config_struct.pull_down_en = GPIO_PULLDOWN_DISABLE;

@@ -58,7 +58,7 @@ static uint8_t midi_serial_channel = 0;
 * RETURN:      
 * NOTES:       
 *****************************************************************************/
-static void midi_serial_uart_rx_purge(void)
+static void __attribute__((unused)) midi_serial_uart_rx_purge(void)
 {
     int length = 0;
     uart_get_buffered_data_len(UART_PORT_NUM, (size_t*)&length);
@@ -136,12 +136,6 @@ static void midi_serial_task(void *arg)
 
                                 // change to this preset
                                 control_request_preset_index(programNumber);
-
-                                // apply some rate limiting, so the message queue doesn't fill if we get spammed hard 
-                                vTaskDelay(pdMS_TO_TICKS(200));
-
-                                // purge uart rx so we don'tr get swamped if rapid changes arrive
-                                midi_serial_uart_rx_purge();
                             }
                             
                             // Skip the data byte
@@ -168,12 +162,6 @@ static void midi_serial_task(void *arg)
                             if (channel == midi_serial_channel)
                             {
                                 midi_helper_adjust_param_via_midi(change_num, value);
-
-                                // apply some rate limiting, so the message queue doesn't fill if we get spammed hard 
-                                vTaskDelay(pdMS_TO_TICKS(200));
-
-                                // purge uart rx so we don'tr get swamped if rapid changes arrive
-                                midi_serial_uart_rx_purge();
                             }
                         }
                         else

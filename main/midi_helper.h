@@ -18,4 +18,4 @@ limitations under the License.
 #pragma once
 
 esp_err_t midi_helper_adjust_param_via_midi(uint8_t change_num, uint8_t midi_value);
-
+uint16_t midi_helper_get_param_for_change_num(uint8_t change_num);

@@ -17,7 +17,6 @@ $<TARGET_FILE:__idf_hal>
 $<TARGET_FILE:__idf_log>
 $<TARGET_FILE:__idf_heap>
 $<TARGET_FILE:__idf_soc>
-$<TARGET_FILE:__idf_esp_security>
 $<TARGET_FILE:__idf_esp_hw_support>
 $<TARGET_FILE:__idf_freertos>
 $<TARGET_FILE:__idf_newlib>
@@ -79,7 +78,6 @@ $<TARGET_FILE:__idf_json>
 $<TARGET_FILE:__idf_mqtt>
 $<TARGET_FILE:__idf_nvs_sec_provider>
 $<TARGET_FILE:__idf_perfmon>
-$<TARGET_FILE:__idf_rt>
 $<TARGET_FILE:__idf_spiffs>
 $<TARGET_FILE:__idf_touch_element>
 $<TARGET_FILE:__idf_usb>

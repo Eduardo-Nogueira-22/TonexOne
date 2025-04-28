@@ -14,14 +14,16 @@
 static const char *TAG = "i2c-simple-example";
 
 #define LCD_TASK_STACK_SIZE (3 * 1024)
-#define I2C_MASTER_SCL_IO           GPIO_NUM_9      /*!< GPIO number used for I2C master clock */
-#define I2C_MASTER_SDA_IO           GPIO_NUM_8      /*!< GPIO number used for I2C master data  */
+#define I2C_MASTER_SCL_IO           GPIO_NUM_8      /*!< GPIO number used for I2C master clock */
+#define I2C_MASTER_SDA_IO           GPIO_NUM_7      /*!< GPIO number used for I2C master data  */
 #define I2C_MASTER_NUM              0                      /*!< I2C master i2c port number, the number of i2c peripheral interfaces available will depend on the chip */
 #define I2C_MASTER_FREQ_HZ          400000                     /*!< I2C master clock frequency */
 #define I2C_MASTER_TX_BUF_DISABLE   0                          /*!< I2C master doesn't need buffer */
 #define I2C_MASTER_RX_BUF_DISABLE   0                          /*!< I2C master doesn't need buffer */
 #define I2C_MASTER_TIMEOUT_MS       1000
 
+// Definições do LCD (adicione no início do arquivo)
+#define LCD_SETDDRAMADDR 0x80  // Comando para definir endereço DDRAM
 
 #define SLAVE_ADDRESS_LCD 0x4E>>1 // change this according to ur setup
 
@@ -63,25 +65,19 @@ void lcd_clear (void)
 	usleep(5000);
 }
 
-void lcd_put_cur(int row, int col)
-{
-    switch (row)
-    {
-        case 0:
-            col |= 0x80;
-            break;
-        case 1:
-            col |= 0xC0;
-            break;
-		case 2:
-            col |= 0x94;
-            break;
-		case 3:
-            col |= 0xD4;
-            break;
-    }
 
-    lcd_send_cmd (col);
+void lcd_put_cur(int row, int col) {
+    // Offsets para cada linha do display 20x4
+    uint8_t row_offsets[] = {0x00, 0x40, 0x14, 0x54};
+    
+    // Verificação de limites de linha/coluna
+    if (row >= 4) row = 3;
+    if (col >= 20) col = 19;
+    if (row < 0) row = 0;
+    if (col < 0) col = 0;
+    
+    // Envia comando para posicionar cursor
+    lcd_send_cmd(LCD_SETDDRAMADDR | (col + row_offsets[row]));
 }
 
 void lcd_init (void)
@@ -184,11 +180,16 @@ void lcd_effect(void *arg)
             lcd_send_string("    ");   
         }
 
-        sprintf(buffer, "VOL=%.1f", param_ptr[TONEX_PARAM_MODEL_VOLUME].Value);
+        lcd_put_cur(3, 0);
+        lcd_send_string("                    ");
+        sprintf(buffer, "V=%.0f", param_ptr[TONEX_PARAM_MODEL_VOLUME].Value);
         lcd_put_cur(3, 0);
         lcd_send_string(buffer);
-        sprintf(buffer, "GAIN=%.1f", param_ptr[TONEX_PARAM_MODEL_GAIN].Value);
-        lcd_put_cur(3, 8);
+        sprintf(buffer, "G=%.0f", param_ptr[TONEX_PARAM_MODEL_GAIN].Value);
+        lcd_put_cur(3, 6);
+        lcd_send_string(buffer);
+        sprintf(buffer, "BPM=%.0f", param_ptr[TONEX_GLOBAL_BPM].Value);
+        lcd_put_cur(3, 11);
         lcd_send_string(buffer);
         
          

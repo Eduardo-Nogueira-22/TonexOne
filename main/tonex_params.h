@@ -58,6 +58,13 @@ enum TonexDelayModels
     TONEX_DELAY_TAPE
 };
 
+enum TonexCabinetTypes
+{
+    TONEX_CABINET_TONE_MODEL,
+    TONEX_CABINET_VIR,
+    TONEX_CABINET_DISABLED
+};
+
 // defined in the same order as they are sent by the Pedal
 enum TonexParameters
 {
@@ -73,7 +80,7 @@ enum TonexParameters
     TONEX_PARAM_COMP_ENABLE,
     TONEX_PARAM_COMP_THRESHOLD,
     TONEX_PARAM_COMP_MAKE_UP,
-    TONEX_PARAM_COMP_ATTACK,
+    TONEX_PARAM_COMP_ATTACK,            //9
 
     // EQ    
     TONEX_PARAM_EQ_POST,                // Pre/Post
@@ -83,27 +90,27 @@ enum TonexParameters
     TONEX_PARAM_EQ_MIDQ,
     TONEX_PARAM_EQ_MID_FREQ,
     TONEX_PARAM_EQ_TREBLE,
-    TONEX_PARAM_EQ_TREBLE_FREQ,
+    TONEX_PARAM_EQ_TREBLE_FREQ,         //17
     
-    //Model and VIR params. TONEX_PARAM_PRESENCE and TONEX_PARAM_DEPTH location  is unknown!
+    //Model and VIR params
     TONEX_PARAM_MODEL_AMP_ENABLE,
-    TONEX_PARAM_MODEL_SW1,      // results in silence, unknown function
+    TONEX_PARAM_MODEL_SW1,          // results in silence, unknown function
     TONEX_PARAM_MODEL_GAIN,
     TONEX_PARAM_MODEL_VOLUME,
     TONEX_PARAM_MODEX_MIX,
-    TONEX_PARAM_MODEL_SW2,          // no audible difference
-    TONEX_PARAM_MODEL_CABINET,      // cabinet model or enable, unknown
+    TONEX_PARAM_CABINET_UNKNOWN,        // seems always set to 1 regardless of cabinet options
+    TONEX_PARAM_CABINET_TYPE,           // 0 = disabled. 1 = VIR. 2 = Tone Model
     TONEX_PARAM_VIR_CABINET_MODEL,
     TONEX_PARAM_VIR_RESO,
     TONEX_PARAM_VIR_MIC_1,
     TONEX_PARAM_VIR_MIC_1_X,
-    TONEX_PARAM_VIR_MIC_1_Y,
-    TONEX_PARAM_VIR_MIC_1_Z,
+    TONEX_PARAM_VIR_MIC_1_Z,                    
     TONEX_PARAM_VIR_MIC_2,
     TONEX_PARAM_VIR_MIC_2_X,
-    TONEX_PARAM_VIR_MIC_2_Y,
     TONEX_PARAM_VIR_MIC_2_Z,
     TONEX_PARAM_VIR_BLEND,
+    TONEX_PARAM_MODEL_PRESENCE,
+    TONEX_PARAM_MODEL_DEPTH,
     
     // Reverb
     TONEX_PARAM_REVERB_POSITION,
@@ -184,9 +191,22 @@ enum TonexParameters
     TONEX_PARAM_DELAY_TAPE_MODE,
     TONEX_PARAM_DELAY_TAPE_MIX,
     
-    // must be last
-    TONEX_PARAM_LAST
+    // must be last actual parameter
+    TONEX_PARAM_LAST,
+
+    // these are not parameters as such, but globals/special/set differently to the params above
+    TONEX_GLOBAL_BPM,
+    TONEX_GLOBAL_INPUT_TRIM,
+    TONEX_GLOBAL_CABSIM_BYPASS,
+    TONEX_GLOBAL_TEMPO_SOURCE,
+    TONEX_GLOBAL_TUNING_REFERENCE,
+
+    // must be last actual global
+    TONEX_GLOBAL_LAST
 };
+
+// special cases for handling effect switches that use Midi but don't change a parameter
+#define TONEX_UNKNOWN           0xFFFF
 
 esp_err_t tonex_params_init(void);
 esp_err_t tonex_params_get_locked_access(tTonexParameter** param_ptr);

@@ -23,22 +23,26 @@ limitations under the License.
 extern "C" {
 #endif
 
-#define APP_VERSION		"1.0.7.2"
+#define APP_VERSION		"1.0.9.2"
 
-    // direct IO pins
-    #define FOOTSWITCH_1		GPIO_NUM_2
-    #define FOOTSWITCH_2		GPIO_NUM_3
-    #define FOOTSWITCH_3		GPIO_NUM_4
-    #define FOOTSWITCH_4		GPIO_NUM_1 
-    #define FOOTSWITCH_5		GPIO_NUM_13
-    #define FOOTSWITCH_6		GPIO_NUM_12
+    // direct IO pins esp32 zero
+    #define FOOTSWITCH_1		GPIO_NUM_4
+    #define FOOTSWITCH_2		GPIO_NUM_5
+    #define FOOTSWITCH_3		GPIO_NUM_6
+    #define FOOTSWITCH_4		GPIO_NUM_3 
+    #define FOOTSWITCH_5		GPIO_NUM_2
+    #define FOOTSWITCH_6		GPIO_NUM_13
+    #define FOOTSWITCH_7		GPIO_NUM_12
+    #define FOOTSWITCH_8		GPIO_NUM_11
+    #define FOOTSWITCH_9		GPIO_NUM_10
+    #define FOOTSWITCH_10		GPIO_NUM_9
 
     // Midi
-    #define UART_RX_PIN         GPIO_NUM_5
-    #define UART_TX_PIN         GPIO_NUM_7
+    #define UART_RX_PIN         GPIO_NUM_15
+    #define UART_TX_PIN         GPIO_NUM_14
 
     // leds
-    #define LED_OUTPUT_GPIO_NUM    GPIO_NUM_48
+    #define LED_OUTPUT_GPIO_NUM    GPIO_NUM_21
 
 
 

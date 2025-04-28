@@ -41,7 +41,7 @@ static const char *TAG = "app_ToneParams";
 static SemaphoreHandle_t ParamMutex;
 
 // "value" below is just a default, is overridden by the preset on load
-static tTonexParameter TonexParameters[TONEX_PARAM_LAST] = 
+static tTonexParameter TonexParameters[TONEX_GLOBAL_LAST] = 
 {
     //value, Min,    Max,  Name
     {0,      0,      1,    "NG POST"},            // TONEX_PARAM_NOISE_GATE_POST   
@@ -73,21 +73,23 @@ static tTonexParameter TonexParameters[TONEX_PARAM_LAST] =
     {5,      0,      10,   "MDL GAIN"},           // TONEX_PARAM_MODEL_GAIN,
     {5,      0,      10,   "MDL VOL"},            // TONEX_PARAM_MODEL_VOLUME,
     {100,    0,      100,  "MDL MIX"},            // TONEX_PARAM_MODEX_MIX,
-    {0,      0,      1,    "MDL SW2"},            // TONEX_PARAM_MODEL_SW2
-    {0,      0,      1,    "MDL CAB"},            // TONEX_PARAM_MODEL_CABINET,
+    {1,      0,      1,    "MDL CABU"},           // TONEX_PARAM_MODEL_CABINET_UNKNOWN
+    {0,      0,      2,    "MDL CAB"},            // TONEX_PARAM_CABINET_TYPE,      // 0 = TONEX_CABINET_TONE_MODEL, 1=TONEX_CABINET_VIR, 2=TONEX_CABINET_DISABLED
 
     // Virtual IR Cabinet
     {5,      0,      10,   "VIR_CMDL"},           // TONEX_PARAM_VIR_CABINET_MODEL,
     {0,      0,      10,   "VIR_RESO"},           // TONEX_PARAM_VIR_RESO,
-    {0,      0,      2,    "VIR_M1"},             // TONEX_PARAM_VIR_MIC_1,
-    {0,      0,      10,   "VIR_M1X"},            // TONEX_PARAM_VIR_MIC_1_X,
-    {0,      0,      10,   "VIR_M1Y"},            // TONEX_PARAM_VIR_MIC_1_Y,
-    {0,      0,      10,   "VIR_M1Z"},            // TONEX_PARAM_VIR_MIC_1_Z,
-    {0,      0,      2,    "VIR_M2"},             // TONEX_PARAM_VIR_MIC_2,
-    {0,      0,      10,   "VIR_M2X"},            // TONEX_PARAM_VIR_MIC_2_X,
-    {0,      0,      10,   "VIR_M2Y"},            // TONEX_PARAM_VIR_MIC_2_Y,
-    {0,      0,      10,   "VIR_M2Z"},            // TONEX_PARAM_VIR_MIC_2_Z,
-    {0,      -100,   100,  "VIR_BLEND"},          // TONEX_PARAM_VIR_BLEND,
+    {0,      0,      2,    "VIR M1"},             // TONEX_PARAM_VIR_MIC_1,
+    {0,      0,      10,   "VIR M1X"},            // TONEX_PARAM_VIR_MIC_1_X,
+    {0,      0,      10,   "VIR M1Z"},            // TONEX_PARAM_VIR_MIC_1_Z,
+    {0,      0,      2,    "VIR M2"},             // TONEX_PARAM_VIR_MIC_2
+    {0,      0,      2,    "VIR M2X"},            // TONEX_PARAM_VIR_MIC_2_X
+    {0,      0,      10,   "VIR M2Z"},            // TONEX_PARAM_VIR_MIC_2_Z
+    {0,      -100,   100,  "VIR BLEND"},          // TONEX_PARAM_VIR_BLEND
+
+    // More amp params
+    {5,      0,      10,   "MDL PRE"},            // TONEX_PARAM_MODEL_PRESENCE
+    {5,      0,      10,   "MDL DEP"},            // TONEX_PARAM_MODEL_DEPTH
     
     // Reverb
     {0,      0,      1,    "RVB POS"},             // TONEX_PARAM_REVERB_POSITION,
@@ -166,7 +168,17 @@ static tTonexParameter TonexParameters[TONEX_PARAM_LAST] =
     {0,      0,      1000, "DLY TA M"},            // TONEX_PARAM_DELAY_TAPE_TIME,
     {0,      0,      100,  "DLY TA F"},            // TONEX_PARAM_DELAY_TAPE_FEEDBACK,
     {0,      0,      1,    "DLY TA O"},            // TONEX_PARAM_DELAY_TAPE_MODE,
-    {0,      0,      100,  "DLY TA X"},            // TONEX_PARAM_DELAY_TAPE_MIX,    
+    {0,      0,      100,  "DLY TA X"},            // TONEX_PARAM_DELAY_TAPE_MIX,   
+    
+    // dummy end of params marker
+    {0,      0,      0,    "LAST"},                // TONEX_PARAM_LAST,
+
+    //************* Global params *****************
+    {80,     40,     240,  "BPM"},                 // TONEX_GLOBAL_BPM
+    {0,      -15,    15,   "TRIM"},                // TONEX_GLOBAL_INPUT_TRIM
+    {0,      0,      1,    "CABSIM"},              // TONEX_GLOBAL_CABSIM_BYPASS
+    {0,      0,      1,    "TEMPOS"},              // TONEX_GLOBAL_TEMPO_SOURCE
+    {440,    415,    465,  "TUNEREF"},              // TONEX_GLOBAL_TUNING_REFERENCE
 };
 
 /****************************************************************************
@@ -216,7 +228,7 @@ esp_err_t tonex_params_release_locked_access(void)
 *****************************************************************************/
 esp_err_t tonex_params_get_min_max(uint16_t param_index, float* min, float* max)
 {
-    if (param_index >= TONEX_PARAM_LAST)
+    if (param_index >= TONEX_GLOBAL_LAST)
     {
         // invalid
         return ESP_FAIL;
@@ -250,7 +262,7 @@ esp_err_t tonex_params_get_min_max(uint16_t param_index, float* min, float* max)
 *****************************************************************************/
 float tonex_params_clamp_value(uint16_t param_index, float value)
 {
-    if (param_index >= TONEX_PARAM_LAST)
+    if (param_index >= TONEX_GLOBAL_LAST)
     {
         // invalid
         return 0;
@@ -294,7 +306,7 @@ esp_err_t __attribute__((unused)) tonex_dump_parameters(void)
     if (xSemaphoreTake(ParamMutex, pdMS_TO_TICKS(PARAM_MUTEX_TIMEOUT)) == pdTRUE)
     {	
         // dump all the param values and names
-        for (uint32_t loop = 0; loop < TONEX_PARAM_LAST; loop++)
+        for (uint32_t loop = 0; loop < TONEX_GLOBAL_LAST; loop++)
         {
             ESP_LOGI(TAG, "Param Dump: %s = %0.2f", TonexParameters[loop].Name, TonexParameters[loop].Value);
         }

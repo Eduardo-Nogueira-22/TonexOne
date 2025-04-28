@@ -119,7 +119,35 @@ enum ConfigItems
     CONFIG_ITEM_EXT_FOOTSW_EFFECT5_SW,
     CONFIG_ITEM_EXT_FOOTSW_EFFECT5_CC,
     CONFIG_ITEM_EXT_FOOTSW_EFFECT5_VAL1,
-    CONFIG_ITEM_EXT_FOOTSW_EFFECT5_VAL2
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT5_VAL2,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT6_SW,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT6_CC,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT6_VAL1,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT6_VAL2,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT7_SW,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT7_CC,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT7_VAL1,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT7_VAL2,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT8_SW,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT8_CC,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT8_VAL1,
+    CONFIG_ITEM_EXT_FOOTSW_EFFECT8_VAL2,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT1_SW,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT1_CC,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT1_VAL1,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT1_VAL2,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT2_SW,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT2_CC,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT2_VAL1,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT2_VAL2,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT3_SW,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT3_CC,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT3_VAL1,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT3_VAL2,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT4_SW,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT4_CC,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT4_VAL1,
+    CONFIG_ITEM_INT_FOOTSW_EFFECT4_VAL2,
 };
 
 enum BluetoothModes
@@ -127,14 +155,6 @@ enum BluetoothModes
     BT_MODE_DISABLED,
     BT_MODE_CENTRAL,
     BT_MODE_PERIPHERAL,
-};
-
-enum FootswitchModes
-{
-    FOOTSWITCH_MODE_DUAL_UP_DOWN,       // next/previous
-    FOOTSWITCH_MODE_QUAD_BANKED,        // like Mvave Choc with bank select from 1+2 and 3+4
-    FOOTSWITCH_MODE_QUAD_BINARY,        // direct binary selection from 4 switches
-    FOOTSWITCH_MODE_LAST
 };
 
 enum WiFiModes
@@ -164,16 +184,24 @@ enum WiFiTxPower
 
 enum FootswitchLayouts
 {
+    FOOTSWITCH_LAYOUT_1X2,                // next/previous
     FOOTSWITCH_LAYOUT_1X3,                // 1 row of 3 switches, bank via 1+2 and 2+3
     FOOTSWITCH_LAYOUT_1X4,                // 1 row of 4 switches, bank via 1+2 and 3+4
-    FOOTSWITCH_LAYOUT_1X5,                // 1 row of 5 switches, bank via 1+2 and 4+5
+    FOOTSWITCH_LAYOUT_1X5A,               // 1 row of 5 switches, bank via 1+2 and 4+5
+    FOOTSWITCH_LAYOUT_1X5B,               // 1 row of 5 switches, bank via last 2
+    FOOTSWITCH_LAYOUT_1X6A,               // 1 row of 6 switches, bank via 1+2 and 5+6  
+    FOOTSWITCH_LAYOUT_1X6B,               // 1 row of 6 switches, bank via last 2
+    FOOTSWITCH_LAYOUT_1X7A,               // 1 row of 7 switches, bank via 1+2 and 6+7  
+    FOOTSWITCH_LAYOUT_1X7B,               // 1 row of 7 switches, bank via last 2
     FOOTSWITCH_LAYOUT_2X3,                // 2 row2 of 3 switches, bank via 1+2 and 2+3
     FOOTSWITCH_LAYOUT_2X4,                // 2 rows of 4 switches, bank via 1+2 and 3+4
     FOOTSWITCH_LAYOUT_2X5A,               // 2 rows of 5 switches, bank via 1+2 and 4+5
-    FOOTSWITCH_LAYOUT_2X5B,               // 2 rows of 5 switches, bank via 5 and 10
+    FOOTSWITCH_LAYOUT_2X5B,               // 2 rows of 5 switches, bank via last 2
     FOOTSWITCH_LAYOUT_2X6A,               // 2 rows of 6 switches, bank via 1+2 and 5+6
-    FOOTSWITCH_LAYOUT_2X6B,               // 2 rows of 6 switches, bank via 6 and 12
-    FOOTSWITCH_LAYOUT_LAST
+    FOOTSWITCH_LAYOUT_2X6B,               // 2 rows of 6 switches, bank via last 2
+    FOOTSWITCH_LAYOUT_1X4_BINARY,         // 4 bit binary 
+    FOOTSWITCH_LAYOUT_LAST,
+    FOOTSWITCH_LAYOUT_DISABLED = 0xFF
 };
 
 enum IOExpanderPins
@@ -206,7 +234,8 @@ typedef struct __attribute__ ((packed))
 
 #define MAX_WIFI_SSID_PW                        65   
 #define MAX_MDNS_NAME                           32
-#define MAX_EXTERNAL_EFFECT_FOOTSWITCHES        5
+#define MAX_EXTERNAL_EFFECT_FOOTSWITCHES        8
+#define MAX_INTERNAL_EFFECT_FOOTSWITCHES        4
 #define SWITCH_NOT_USED                         0xFF
 
 // thread safe public API
@@ -222,6 +251,7 @@ void control_set_skin_previous(void);
 void control_save_user_data(uint8_t reboot);
 void control_sync_preset_details(uint16_t index, char* name);
 void control_set_user_text(char* text);
+void control_trigger_tap_tempo(void);
 
 // config API
 void control_set_default_config(void);
