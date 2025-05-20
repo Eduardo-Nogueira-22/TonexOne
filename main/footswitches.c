@@ -47,7 +47,7 @@ limitations under the License.
 
 #define FOOTSWITCH_TASK_STACK_SIZE (3 * 1024)
 #define FOOTSWITCH_SAMPLE_COUNT 5 // 20 msec per sample
-#define BANK_MODE_BUTTONS 8
+#define BANK_MODE_BUTTONS 7
 #define BANK_MAXIMUM (MAX_PRESETS / BANK_MODE_BUTTONS)
 #define BUTTON_FACTORY_RESET_TIME 400 // * 20 msec = 10 secs
 
@@ -281,7 +281,7 @@ static void footswitch_handle_quad_banked(void)
     float param;
     u_int8_t st_button;
    
-    // read all 4 switches (and swap so 1 is pressed)
+  
     read_footswitch_input(FOOTSWITCH_1, &value);
     if (value == 0)
     {
@@ -443,7 +443,7 @@ static void footswitch_handle_quad_banked(void)
         }else if (st_button == 2){
             //noting      
         }else if (st_button == 3){
-            binary_val |= 128;
+            //binary_val |= 128;
         }
         st_button=0;
     }
@@ -550,10 +550,10 @@ static void footswitch_handle_quad_banked(void)
                 {
                     new_preset += 6;
                 }
-                else if ((FootswitchControl.index_pending & 0x80) != 0)
-                {
-                    new_preset += 7;
-                }
+                // else if ((FootswitchControl.index_pending & 0x80) != 0)
+                // {
+                //     new_preset += 7;
+                // }
 
                 // set the preset
                 control_request_preset_index(new_preset);

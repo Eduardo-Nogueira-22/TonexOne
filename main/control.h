@@ -24,58 +24,60 @@ enum Skins
 {
 #if CONFIG_TONEX_CONTROLLER_SKINS_AMP    
     // Amps
-    AMP_SKIN_JCM800,
-    AMP_SKIN_TWIN_REVERB,
-    AMP_SKIN_2001RB,
+    AMP_SKIN_JCM,
+    AMP_SKIN_SILVERFACE,
+    AMP_SKIN_TONEXAMPBLACK,
     AMP_SKIN_5150,
-    AMP_SKIN_B18N,
-    AMP_SKIN_BLUES_DELUXE,
-    AMP_SKIN_DEVILLE,
-    AMP_SKIN_DUAL_RECTIFIER,
-    AMP_SKIN_GOLD_FINGER,
-    AMP_SKIN_INVADER,
-    AMP_SKIN_JAZZ_CHORUS,
-    AMP_SKIN_OR_50,
-    AMP_SKIN_POWERBALL,
-    AMP_SKIN_PRINCETON,
-    AMP_SKIN_SVTCL,
-    AMP_SKIN_MAVERICK,
-    AMP_SKIN_MK3,
-    AMP_SKIN_SUPERBASS,
-    AMP_SKIN_DUMBLE,
+    AMP_SKIN_AMPEGCHROME,
+    AMP_SKIN_FENDERTWEEDBIG,
+    AMP_SKIN_FENDERHOTROD,
+    AMP_SKIN_MESABOOGIEDUAL,
+    AMP_SKIN_ELEGANTBLUE,
+    AMP_SKIN_MODERNWHITEPLEXI,
+    AMP_SKIN_ROLANDJAZZ,
+    AMP_SKIN_ORANGEOR120,
+    AMP_SKIN_MODERNBLACKPLEXI,
+    AMP_SKIN_FENDERTWIN,
+    AMP_SKIN_BA500,
+    AMP_SKIN_MESAMARKWOOD,
+    AMP_SKIN_MESAMARKV,
+    AMP_SKIN_JTM,
+    AMP_SKIN_JBDUMBLE1,
     AMP_SKIN_JETCITY,
     AMP_SKIN_AC30,
-    AMP_SKIN_EVH5150,
-    AMP_SKIN_2020,
-    AMP_SKIN_PINK_TACO,
-    AMP_SKIN_SUPRO_50,
+    AMP_SKIN_EVH,
+    AMP_SKIN_TONEXAMPRED,
+    AMP_SKIN_FRIEDMANN,
+    AMP_SKIN_SUPRO,
     AMP_SKIN_DIEZEL,
+    AMP_SKIN_WHITEMODERN,
+    AMP_SKIN_WOODAMP,
 #endif
 
 #if CONFIG_TONEX_CONTROLLER_SKINS_PEDAL
     // Pedals
-    PEDAL_SKIN_ARION,
     PEDAL_SKIN_BIGMUFF,
-    PEDAL_SKIN_DARKGLASS,
-    PEDAL_SKIN_DOD,
-    PEDAL_SKIN_EHX,
-    PEDAL_SKIN_FENDER,
-    PEDAL_SKIN_FULLTONE,
-    PEDAL_SKIN_FZS,
-    PEDAL_SKIN_JHS,
-    PEDAL_SKIN_KLON,
-    PEDAL_SKIN_LANDGRAF,
-    PEDAL_SKIN_MXR,
-    PEDAL_SKIN_MXR2,
-    PEDAL_SKIN_OD1,
-    PEDAL_SKIN_PLIMSOUL,
-    PEDAL_SKIN_ROGERMAYER,
-    PEDAL_SKIN_SEYMOUR,
-    PEDAL_SKIN_STRYMON,
-    PEDAL_SKIN_TREX,
-    PEDAL_SKIN_TUBESCREAMER,
-    PEDAL_SKIN_WAMPLER,
-    PEDAL_SKIN_ZVEX,
+    PEDAL_SKIN_BOSSBLACK,
+    PEDAL_SKIN_BOSSSILVER,
+    PEDAL_SKIN_BOSSYELLOW,
+    PEDAL_SKIN_FUZZRED,
+    PEDAL_SKIN_FUZZSILVER,
+    PEDAL_SKIN_IBANEZBLUE,
+    PEDAL_SKIN_IBANEZDARKBLUE,
+    PEDAL_SKIN_IBANEZGREEN,
+    PEDAL_SKIN_IBANEZRED,
+    PEDAL_SKIN_KLONGOLD,
+    PEDAL_SKIN_LIFEPEDAL,
+    PEDAL_SKIN_MORNINGGLORY,
+    PEDAL_SKIN_MXRDOUBLEBLACK,
+    PEDAL_SKIN_MXRDOUBLERED,
+    PEDAL_SKIN_MXRSINGLEBLACK,
+    PEDAL_SKIN_MXRSINGLEGOLD,
+    PEDAL_SKIN_MXRSINGLEGREEN,
+    PEDAL_SKIN_MXRSINGLEORANGE,
+    PEDAL_SKIN_MXRSINGLEWHITE,
+    PEDAL_SKIN_MXRSINGLEYELLOW,
+    PEDAL_SKIN_RATYELLOW,
 #endif 
 
     SKIN_MAX        // must be last
@@ -91,12 +93,14 @@ enum ConfigItems
     CONFIG_ITEM_MIDI_ENABLE,
     CONFIG_ITEM_MIDI_CHANNEL,
     CONFIG_ITEM_TOGGLE_BYPASS,
+    CONFIG_ITEM_LOOP_AROUND,
     CONFIG_ITEM_FOOTSWITCH_MODE,
     CONFIG_ITEM_ENABLE_BT_MIDI_CC,
     CONFIG_ITEM_WIFI_MODE,
     CONFIG_ITEM_WIFI_SSID,
     CONFIG_ITEM_WIFI_PASSWORD,
     CONFIG_ITEM_SCREEN_ROTATION,
+    CONFIG_ITEM_SAVE_PRESET_TO_SLOT,
     CONFIG_ITEM_WIFI_TX_POWER,
     CONFIG_ITEM_MDNS_NAME,
     CONFIG_ITEM_EXT_FOOTSW_PRESET_LAYOUT,
@@ -174,12 +178,32 @@ enum ScreenRotation
     SCREEN_ROTATION_MAX,
 };
 
+enum SavePresetSlot
+{
+    SAVE_PRESET_SLOT_CURRENT,
+    SAVE_PRESET_SLOT_A,
+    SAVE_PRESET_SLOT_B,
+    SAVE_PRESET_SLOT_C
+};
+
 enum WiFiTxPower
 {
     WIFI_TX_POWER_25,
     WIFI_TX_POWER_50,
     WIFI_TX_POWER_75,    
     WIFI_TX_POWER_100
+};
+
+enum ConfigTabs43B
+{
+    CONFIG_TAB_GATE,
+    CONFIG_TAB_COMPRESSOR,
+    CONFIG_TAB_AMPLIFIER,
+    CONFIG_TAB_EQ,
+    CONFIG_TAB_MODULATION,
+    CONFIG_TAB_DELAY,
+    CONFIG_TAB_REVERB,
+    CONFIG_TAB_GLOBAL,
 };
 
 enum FootswitchLayouts
@@ -237,11 +261,13 @@ typedef struct __attribute__ ((packed))
 #define MAX_EXTERNAL_EFFECT_FOOTSWITCHES        8
 #define MAX_INTERNAL_EFFECT_FOOTSWITCHES        4
 #define SWITCH_NOT_USED                         0xFF
+#define MAX_PRESETS_DEFAULT                     20
 
 // thread safe public API
 void control_request_preset_up(void);
 void control_request_preset_down(void);
 void control_request_preset_index(uint8_t index);
+void control_request_bank_index(uint8_t index);
 void control_set_usb_status(uint32_t status);
 void control_set_bt_status(uint32_t status);
 void control_set_wifi_status(uint32_t status);
@@ -249,9 +275,12 @@ void control_set_amp_skin_index(uint32_t status);
 void control_set_skin_next(void);
 void control_set_skin_previous(void);
 void control_save_user_data(uint8_t reboot);
+void control_sync_preset_name(uint16_t index, char* name);
 void control_sync_preset_details(uint16_t index, char* name);
 void control_set_user_text(char* text);
 void control_trigger_tap_tempo(void);
+void control_set_preset_order(uint8_t order[MAX_PRESETS_DEFAULT]);
+uint8_t* control_get_preset_order(void);
 
 // config API
 void control_set_default_config(void);

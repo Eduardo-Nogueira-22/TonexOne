@@ -10,5 +10,9 @@
     "board/esp32s3-builtin.cfg"
   ],
   "idf.portWin": "COM6",
-  "idf.flashType": "UART"
+  "idf.flashType": "UART",
+  "files.associations": {
+    "*.txt": "platformio-debug.asm",
+    "stdlib.h": "c"
+  }
 }

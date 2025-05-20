@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/Eduardo Nogueira/Tonexmidi8/TonexOne/main
+# Install script for directory: C:/Users/Eduardo Nogueira/Tonexone/TonexOne/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

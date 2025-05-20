@@ -1965,7 +1965,7 @@ rule C_STATIC_LIBRARY_LINKER____idf_main_
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = C:\IDF\ESPRESSIF\tools\cmake\3.24.0\bin\cmake.exe --regenerate-during-build -S"C:\Users\Eduardo Nogueira\Tonexmidi8\TonexOne" -B"C:\Users\Eduardo Nogueira\Tonexmidi8\TonexOne\build"
+  command = C:\IDF\ESPRESSIF\tools\cmake\3.24.0\bin\cmake.exe --regenerate-during-build -S"C:\Users\Eduardo Nogueira\Tonexone\TonexOne" -B"C:\Users\Eduardo Nogueira\Tonexone\TonexOne\build"
   description = Re-running CMake...
   generator = 1
 

@@ -307,6 +307,67 @@
             /* prevents zoom when double-tapping tap tempo */
             touch-action: manipulation;
         }
+
+        .preset-order-item {
+            border: 1px solid #ced4da;
+            border-radius: .375rem;
+            padding: 2px;
+            margin: 2px;
+        }
+
+        .preset-order-item :first-child {
+            margin-top: -0.2em;
+        }
+
+        .preset-order-item :nth-child(2) {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .preset-order-bank {
+            padding: 2px;
+        }
+
+        .preset-order-bank > div {
+            height: 100%;
+            border: 1px solid #ced4da;
+            border-radius: .375rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .preset-order-bank > div > span {
+            writing-mode: vertical-lr;
+            transform: scale(-1);
+        }
+
+		#value_input_bg {
+			top: 0;
+			left: 0;
+			position:fixed; 
+			height:100%;
+			width:100%;
+			z_index:0;	
+			background: rgba(0, 0,0, 0.7);
+			display: none;
+		}
+
+		#value_input {
+			color: #ccc;
+			opacity: 1;
+			position:fixed; 
+			background-color: #333;
+			text-align:center;
+			border: 5px solid;
+			position: absolute;
+			top: 40%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			padding: 10px;
+			display: none;
+		}
     </style>
 
     <script>   
@@ -591,7 +652,7 @@
         midiControlChangeAssociations.set(95, { param: "DELAY TAPE MIX", value: { type: "RANGE" } })
 
         // REVERB
-        midiControlChangeAssociations.set("DELAY / TAPE", null);
+        midiControlChangeAssociations.set("REVERB", null);
         midiControlChangeAssociations.set(75, { param: "REVERB POWER", value: { type: "TOGGLE" } })
         midiControlChangeAssociations.set(85, { param: "REVERB TYPE", value: { type: "CHOICE", values: { 0: "SPRING 1", 1: "SPRING 2", 2: "SPRING 3", 3: "SPRING 4", 4: "ROOM", 5: "PLATE" } } })
         midiControlChangeAssociations.set(84, { param: "REVERB POSITION", value: { type: "CHOICE", values: { 0: "POST AMP", 127: "LAST" } } })
@@ -640,16 +701,20 @@
 
         // GLOBAL
         midiControlChangeAssociations.set("GLOBAL", null);
-        midiControlChangeAssociations.set(12, { param: "PRESET ON/OFF", value: { type: "TOGGLE" } })
-        midiControlChangeAssociations.set(11, { param: "EXPRESSION PEDAL", value: { type: "RANGE" } })
+        // not supported midiControlChangeAssociations.set(12, { param: "PRESET ON/OFF", value: { type: "TOGGLE" } })
+        // not supported midiControlChangeAssociations.set(11, { param: "EXPRESSION PEDAL", value: { type: "RANGE" } })
         midiControlChangeAssociations.set(0, { param: "MIDI PATCH BANK", value: { type: "CHOICE", values: { 0: "000", 1: "001" } } })
         midiControlChangeAssociations.set(86, { param: "PRESET DOWN", value: { type: "TOGGLE" } })
         midiControlChangeAssociations.set(87, { param: "PRESET UP", value: { type: "TOGGLE" } })
         midiControlChangeAssociations.set(88, { param: "BPM", value: { type: "RANGE" } })
-        midiControlChangeAssociations.set(89, { param: "BANK DOWN", value: { type: "TOGGLE" } })
-        midiControlChangeAssociations.set(90, { param: "BANK UP", value: { type: "TOGGLE" } })
-        midiControlChangeAssociations.set(9, { param: "TUNER", value: { type: "TOGGLE" } })
+        // not supported midiControlChangeAssociations.set(89, { param: "BANK DOWN", value: { type: "TOGGLE" } })
+        // not supported midiControlChangeAssociations.set(90, { param: "BANK UP", value: { type: "TOGGLE" } })
+        //not supported midiControlChangeAssociations.set(9, { param: "TUNER", value: { type: "TOGGLE" } })
         midiControlChangeAssociations.set(10, { param: "TAP TEMPO", value: { type: "TOGGLE" } })
+        midiControlChangeAssociations.set(116, { param: "INPUT TRIM", value: { type: "RANGE" } })
+        midiControlChangeAssociations.set(117, { param: "CABSIM BYPASS", value: { type: "TOGGLE" } })
+        midiControlChangeAssociations.set(118, { param: "TEMPO SOURCE", value: { type: "TOGGLE" } })
+        midiControlChangeAssociations.set(119, { param: "TUNING REFERENCE", value: { type: "RANGE" } })
 
         // tap tempo
         let globalTapTempo = new TapTempo();
@@ -716,6 +781,7 @@
             
             // request config, params, and current preset
             sendWS({"CMD": "GETPRESET"});
+            sendWS({"CMD": "GETPRESETNAMES"});
             sendWS({"CMD": "GETPARAMS"});
             sendWS({"CMD": "GETCONFIG"});        
         }
@@ -797,6 +863,16 @@
             var obj = document.getElementById(objname);
             //obj.dataset.indexNumber = param_index;
             obj.setAttribute("data-indexnumber", param_index);
+        }
+
+        function showDelayTimeAndTimesign(sync) {
+            document.getElementById("dl_time").parentElement.style.display = sync == 0 ? "block" : "none";
+            document.getElementById("dl_timesign").parentElement.style.display = sync == 0 ? "none" : "block";
+        }
+
+        function showModTimeAndTimesign(sync) {
+            document.getElementById("mo_param1").parentElement.style.display = sync == 0 ? "block" : "none";
+            document.getElementById("mo_timesign").parentElement.style.display = sync == 0 ? "none" : "block";
         }
 
         function processReturnCmd(data) {
@@ -1214,11 +1290,16 @@
                             case TONEX_PARAM_MODULATION_CHORUS_SYNC:
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_CHORUS) {
                                     configureParamSwitch("mo_sync", value);   
-                                    setParamData("mo_sync", parseInt(key));                                 
+                                    setParamData("mo_sync", parseInt(key));
+                                    showModTimeAndTimesign(value);
                                 }
                                 break;
 
                             case TONEX_PARAM_MODULATION_CHORUS_TS:
+                                if (getSelectValue("mo_model") == TONEX_MODULATION_CHORUS) {
+                                    configureParamSelect("mo_timesign", value);
+                                    setParamData("mo_timesign", parseInt(key));
+                                }
                                 break;
 
                             case TONEX_PARAM_MODULATION_CHORUS_RATE:
@@ -1246,10 +1327,15 @@
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_TREMOLO) {
                                     configureParamSwitch("mo_sync", value);
                                     setParamData("mo_sync", parseInt(key));
+                                    showModTimeAndTimesign(value);
                                 }
                                 break;
 
                             case TONEX_PARAM_MODULATION_TREMOLO_TS:
+                                if (getSelectValue("mo_model") == TONEX_MODULATION_TREMOLO) {
+                                    configureParamSelect("mo_timesign", value);
+                                    setParamData("mo_timesign", parseInt(key));
+                                }
                                 break;
 
                             case TONEX_PARAM_MODULATION_TREMOLO_RATE:
@@ -1284,10 +1370,15 @@
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_PHASER) {
                                     configureParamSwitch("mo_sync", value);
                                     setParamData("mo_sync", parseInt(key));
+                                    showModTimeAndTimesign(value);
                                 }
                                 break;
 
                             case TONEX_PARAM_MODULATION_PHASER_TS:
+                                if (getSelectValue("mo_model") == TONEX_MODULATION_PHASER) {
+                                    configureParamSelect("mo_timesign", value);
+                                    setParamData("mo_timesign", parseInt(key));
+                                }
                                 break;
 
                             case TONEX_PARAM_MODULATION_PHASER_RATE:
@@ -1315,10 +1406,15 @@
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_FLANGER) {
                                     configureParamSwitch("mo_sync", value);
                                     setParamData("mo_sync", parseInt(key));
+                                    showModTimeAndTimesign(value);
                                 }
                                 break;
 
                             case TONEX_PARAM_MODULATION_FLANGER_TS:
+                                if (getSelectValue("mo_model") == TONEX_MODULATION_FLANGER) {
+                                    configureParamSelect("mo_timesign", value);
+                                    setParamData("mo_timesign", parseInt(key));
+                                }
                                 break;
 
                             case TONEX_PARAM_MODULATION_FLANGER_RATE:
@@ -1353,10 +1449,15 @@
                                 if (getSelectValue("mo_model") == TONEX_MODULATION_ROTARY) {
                                     configureParamSwitch("mo_sync", value);
                                     setParamData("mo_sync", parseInt(key));
+                                    showModTimeAndTimesign(value);
                                 }
                                 break;
 
                             case TONEX_PARAM_MODULATION_ROTARY_TS:
+                                if (getSelectValue("mo_model") == TONEX_MODULATION_ROTARY) {
+                                    configureParamSelect("mo_timesign", value);
+                                    setParamData("mo_timesign", parseInt(key));
+                                }
                                 break;
 
                             case TONEX_PARAM_MODULATION_ROTARY_SPEED:
@@ -1407,10 +1508,15 @@
                                 if (getSelectValue("dl_model") == TONEX_DELAY_DIGITAL) {
                                     configureParamSwitch("dl_sync", value);
                                     setParamData("dl_sync", parseInt(key));
+                                    showDelayTimeAndTimesign(value);
                                 }
                                 break;
 
                             case TONEX_PARAM_DELAY_DIGITAL_TS:
+                                if (getSelectValue("dl_model") == TONEX_DELAY_DIGITAL) {
+                                    configureParamSelect("dl_timesign", value);
+                                    setParamData("dl_timesign", parseInt(key));
+                                }
                                 break;
 
                             case TONEX_PARAM_DELAY_DIGITAL_TIME:
@@ -1445,10 +1551,15 @@
                                 if (getSelectValue("dl_model") == TONEX_DELAY_TAPE) {
                                     configureParamSwitch("dl_sync", value);
                                     setParamData("dl_sync", parseInt(key));
+                                    showDelayTimeAndTimesign(value);
                                 }
                                 break;
                                 
                             case TONEX_PARAM_DELAY_TAPE_TS:
+                                if (getSelectValue("dl_model") == TONEX_DELAY_TAPE) {
+                                    configureParamSelect("dl_timesign", value);
+                                    setParamData("dl_timesign", parseInt(key));
+                                }
                                 break;
 
                             case TONEX_PARAM_DELAY_TAPE_TIME:
@@ -1515,6 +1626,7 @@
                     configureParamSwitch("custombte", data['BT_CUST_EN']);
                     setParamLabel("custombt", data['BT_CUST_NAME']);
                     configureParamSwitch("togglebypass", data['TOGGLE_BYPASS']);
+                    configureParamSwitch("looparound", data['LOOP_AROUND']);
                     configureParamSwitch("midienabled", data['S_MIDI_EN']);
                     configureParamSelect("midichannel", data['S_MIDI_CH']);                    
                     configureParamSwitch("btmidicc", data['BT_MIDI_CC']);
@@ -1525,6 +1637,7 @@
                     setParamValue("mdnsname", data['MDNS_NAME']);
 
                     configureParamSelect("screenrot", data['SCREEN_ROT']);
+                    configureParamSelect("presetslot", data['PRESET_SLOT']);
 
                     configureParamSelect("extfslay", data['EXTFS_PS_LAYOUT']);
                                         
@@ -1601,14 +1714,24 @@
                     extFSChanged("intfx4");
                     setExtFSValue("intfx4v1", data['INTFS_ES4_V1']);
                     setExtFSValue("intfx4v2", data['INTFS_ES4_V2']);
+
+                    setPresetOrder(data['PRESET_ORDER'], data['PRESET_COLORS']);
                     
                     break;   
                 
                 case 'GETPRESET':
                     configureParamSelect("set_preset", data['INDEX']);
+                    break;  
+                
+                case 'GETPRESETNAMES':
+                    // update the list to have the preset names
+                    for (var index in data['PRESET_NAMES']) {
+                        let name = data['PRESET_NAMES'][index];
+                        document.getElementById("set_preset").options[index].text = name;
 
-                    // update the list to have the preset name
-                    var sel = document.getElementById("set_preset").options[data['INDEX']].text = data['NAME'];
+                        var element = document.querySelector('[id^="preset-order-"][order_value="' + index + '"]');
+                        presetOrderElementName(element).innerHTML = name;
+                    }
                     break;                  
             }
         }
@@ -1697,6 +1820,9 @@
                 var togglebypass = document.getElementById("togglebypass").checked;
                 var togglebypassen = togglebypass ? 1 : 0;
 
+                var looparound = document.getElementById("looparound").checked;
+                var looparounden = looparound ? 1 : 0;
+
                 var midienabled = document.getElementById("midienabled").checked;
                 var midienableden = midienabled ? 1 : 0;
                 
@@ -1706,7 +1832,8 @@
                 var btmidicc = document.getElementById("btmidicc").checked;
                 var btmidiccen = btmidicc ? 1 : 0;
                                    
-                var screenrot = document.getElementById("screenrot").value;                
+                var screenrot = document.getElementById("screenrot").value;       
+                var presetslot = document.getElementById("presetslot").value;         
                 var extfslay = document.getElementById("extfslay").value;  
 
                 var extfx1sw = document.getElementById("extfx1sw").value;  
@@ -1777,11 +1904,13 @@
                         "BT_CUST_EN": custombteen,
                         "BT_CUST_NAME": custombt,
                         "TOGGLE_BYPASS": togglebypassen,
+                        "LOOP_AROUND": looparounden,
                         "S_MIDI_EN": midienableden,
                         "S_MIDI_CH": parseInt(midichannel),
                         "FOOTSW_MODE": parseInt(footmode),
                         "BT_MIDI_CC": btmidiccen,
                         "SCREEN_ROT": parseInt(screenrot),
+                        "PRESET_SLOT": parseInt(presetslot),
                         "EXTFS_PS_LAYOUT": parseInt(extfslay),                        
                         "EXTFS_ES1_SW": parseInt(extfx1sw),
                         "EXTFS_ES1_CC": parseInt(extfx1cc),
@@ -1888,21 +2017,35 @@
                         "VALUE": param_value});                        
             }
         }
-		function showValue(e) {
+        function showValue(e) {
             let s = document.querySelector(`label[for="${e.id}"]`);
-            let t = s.innerText;
-            let i = t.indexOf(":");
-            if (i>0) {
-                s.innerText = t.substr(0, i);
-            }
+            s.innerText = s.innerText.replace(/ :.*/, "");
             s.innerText += " : " + parseFloat(e.value);
             
             let unit = s.getAttribute("unit");
             if (unit != null) {
                 s.innerText += unit;
             }
-		}
-     
+            s.onclick = function(e){
+                let tmp_id = e.target.getAttribute('for');
+                let value_input_modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('value_input_bg'));
+                value_input_modal.show();            
+                //showvalueinput(1);
+                document.getElementById("value_input_lbl").innerText = s.innerText.replace(/:.*/, "") ;				
+                if (unit != null) {
+                    document.getElementById("value_input_lbl").innerText += "("+unit+")";
+                }
+                document.getElementById("value_input_val").value = document.getElementById(tmp_id).value
+                document.getElementById("value_input_val").step = document.getElementById(tmp_id).step;
+                document.getElementById("value_input_btn").onclick = function() {
+                    document.getElementById(tmp_id).value = document.getElementById("value_input_val").value;					
+                    document.getElementById(tmp_id).dispatchEvent(new Event('input'));
+                    value_input_modal.hide();  
+                };
+
+            };
+        }
+         
         // Tap tempo
 
         function TapTempo() {
@@ -2177,8 +2320,119 @@
                     return document.getElementById(`intfx${fs}v${value}_s`).value;
             }
         }
+
+        function setPresetOrder(presetOrder, presetColors) {
+            var names = [];
+            
+            for (i=0; i<20; i++) {
+                var element = document.querySelector('[id^="preset-order-"][order_value="' + i + '"]');
+                names.push(presetOrderElementName(element).innerHTML);
+            }
+
+            for (i=0; i<20; i++) {
+                let value = presetOrder[i];
+                let name = names[value];
+                var element = document.getElementById(`preset-order-${i}`);
+                element.setAttribute("order_value", value);
+                presetOrderElementColor(element).style.color = presetColors[value];
+                presetOrderElementName(element).innerHTML = name;
+            }
+
+            updatePresetOrderBanks();
+        }
+
+        function updatePresetOrderBanks() {
+            let column = document.getElementById('preset-order-bank-column');
+
+            let internalLayout = document.querySelector('#intfslay option:checked').innerHTML;
+            let externalLayout = document.querySelector('#extfslay option:checked').innerHTML;
+
+            if (externalLayout != 'Disabled' && !externalLayout.startsWith("1x2")) {
+                column.style.display = "block";
+                updatePresetOrderBanksWithLayout(externalLayout);
+            } else if (internalLayout != 'Disabled' && !internalLayout.startsWith("1x2")) {
+                column.style.display = "block";
+                updatePresetOrderBanksWithLayout(internalLayout);
+            } else {
+                column.style.display = "none";
+            }
+        }
+
+        function updatePresetOrderBanksWithLayout(layout) {
+            let layoutValues = /(\d)x(\d)(A|B)?.*/g.exec(layout);
+            let presetsPerBank = layoutValues[1] * layoutValues[2] - (layoutValues[3] == 'B' ? 2 : 0);
+            let banks = Math.ceil(20/presetsPerBank);
+            let height = 100*presetsPerBank/20;
+            let heightLast = 100*(20-(banks-1)*presetsPerBank)/20;
+
+            for (i=0; i<7; i++) {
+                var element = document.getElementById(`preset-order-bank-${i}`);
+                element.style.height = `${i<(banks-1) ? height : heightLast}%`;
+                element.style.display = i>=banks ? "none" : "block";
+            }
+        }
+
+        function presetOrderDown(index) {
+            var element = document.getElementById(`preset-order-${index}`);
+            var elementNext = document.getElementById(`preset-order-${index + 1}`);
+            
+            let orderValue = parseInt(elementNext.getAttribute("order_value"));
+            let orderValueNext = parseInt(element.getAttribute("order_value"));
+            element.setAttribute("order_value", orderValue);
+            elementNext.setAttribute("order_value", orderValueNext);
+
+            let name = presetOrderElementName(elementNext).innerHTML;
+            let nameNext = presetOrderElementName(element).innerHTML;
+            presetOrderElementName(element).innerHTML = name;
+            presetOrderElementName(elementNext).innerHTML = nameNext;
+
+            let color = presetOrderElementColor(elementNext).style.color;
+            let colorNext = presetOrderElementColor(element).style.color;
+            presetOrderElementColor(element).style.color = color;
+            presetOrderElementColor(elementNext).style.color = colorNext;
+        }
+
+        function presetOrderUp(index) {
+            var element = document.getElementById(`preset-order-${index}`);
+            var elementPrevious = document.getElementById(`preset-order-${index - 1}`);
+
+            let orderValue = parseInt(elementPrevious.getAttribute("order_value"));
+            let orderValuePrevious = parseInt(element.getAttribute("order_value"));
+            element.setAttribute("order_value", orderValue);
+            elementPrevious.setAttribute("order_value", orderValuePrevious);
+
+            let name = presetOrderElementName(elementPrevious).innerHTML;
+            let namePrevious = presetOrderElementName(element).innerHTML;
+            presetOrderElementName(element).innerHTML = name;
+            presetOrderElementName(elementPrevious).innerHTML = namePrevious;
+
+            let color = presetOrderElementColor(elementPrevious).style.color;
+            let colorNext = presetOrderElementColor(element).style.color;
+            presetOrderElementColor(element).style.color = color;
+            presetOrderElementColor(elementPrevious).style.color = colorNext;
+        }
+
+        function presetOrderElementColor(element) {
+            return element.children[0].children[0];
+        }
+
+        function presetOrderElementName(element) {
+            return element.children[0].children[1];
+        }
+
+        function savePresetOrder() {
+            var presetOrder = [];
+            for (i=0; i<20; i++) {
+                var element = document.getElementById(`preset-order-${i}`);
+                presetOrder.push(parseInt(element.getAttribute("order_value")));
+            }
+
+            sendWS({"CMD": "SETPRESETORDER", 
+                        "PRESET_ORDER": presetOrder});
+        }
+		
     </script>
-        
+  
     <nav class="navbar navbar-dark bg-dark">
        <label style="margin-left: 10px; font-size: 30px; color:#FB9230;">Tonex One Controller</label>
        <form class="form-inline text-white">
@@ -2208,7 +2462,6 @@
             </div>            
         </form>
     </nav>
-
     <div class="tab" id="MainMenu">
       <button class="tablinks" onclick="openTab(event, 'NoiseGate')" id="defaultOpen">Gate</button>
       <button class="tablinks" onclick="openTab(event, 'Compressor')">Comp</button>
@@ -2218,6 +2471,7 @@
       <button class="tablinks" onclick="openTab(event, 'Delay')">Delay</button>
       <button class="tablinks" onclick="openTab(event, 'Amplifier')">Amp</button>
       <button class="tablinks" onclick="openTab(event, 'Global')">Global</button>
+      <button class="tablinks" onclick="openTab(event, 'Presets')">Presets</button>
       <button class="tablinks" onclick="openTab(event, 'Bluetooth')">BT</button>
       <button class="tablinks" onclick="openTab(event, 'Midi')">Midi</button>
       <button class="tablinks" onclick="openTab(event, 'Internal')">Int</button>
@@ -2454,6 +2708,30 @@
                 </div>
                 <br>
                 <div class="container">
+                    <label class="form-check-label" for="mo_timesign">Timesign</label>
+                    <select class="form-select select_style" data-index-number="dummy" onchange="onParamChange(event)" id="mo_timesign">
+                        <option value="0">1/32</option>
+                        <option value="1">1/32 D</option>
+                        <option value="2">1/32 T</option>
+                        <option value="3">1/16</option>
+                        <option value="4">1/16 D</option>
+                        <option value="5">1/16 T</option>
+                        <option value="6">1/8</option>
+                        <option value="7">1/8 D</option>
+                        <option value="8">1/8 T</option>
+                        <option value="9" selected>1/4</option>
+                        <option value="10">1/4 D</option>
+                        <option value="11">1/4 T</option>
+                        <option value="12">1/2</option>
+                        <option value="13">1/2 D</option>
+                        <option value="14">1/2 T</option>
+                        <option value="15">1/1</option>
+                        <option value="16">1/1 D</option>
+                        <option value="17">1/1 T</option>
+                    </select>
+                    <br>
+                </div>
+                <div class="container">
                     <div class="row">
                         <div class="col">
                             <label for="mo_param1" id="mo_param1l" class="form-label">Param1</label>
@@ -2536,6 +2814,30 @@
                         </div>
                     </div>
                     <input type="range" data-index-number="dummy" onchange="onParamChange(event)" class="form-range" id="dl_time">
+                </div>
+                <div class="container">
+                    <label class="form-check-label" for="dl_timesign">Timesign</label>
+                    <select class="form-select select_style" data-index-number="dummy" onchange="onParamChange(event)" id="dl_timesign">
+                        <option value="0">1/32</option>
+                        <option value="1">1/32 D</option>
+                        <option value="2">1/32 T</option>
+                        <option value="3">1/16</option>
+                        <option value="4">1/16 D</option>
+                        <option value="5">1/16 T</option>
+                        <option value="6">1/8</option>
+                        <option value="7">1/8 D</option>
+                        <option value="8">1/8 T</option>
+                        <option value="9" selected>1/4</option>
+                        <option value="10">1/4 D</option>
+                        <option value="11">1/4 T</option>
+                        <option value="12">1/2</option>
+                        <option value="13">1/2 D</option>
+                        <option value="14">1/2 T</option>
+                        <option value="15">1/1</option>
+                        <option value="16">1/1 D</option>
+                        <option value="17">1/1 T</option>
+                    </select>
+                    <br>
                 </div>
                 <div class="container">
                     <label for="dl_feedback" class="form-label" unit="%">Feedback</label>
@@ -2636,6 +2938,223 @@
                 <div class="container">
                     <label for="gb_tref" class="form-label" unit="Hz">Tuning Reference</label>
                     <input type="range" data-index-number="dummy" onchange="onParamChange(event)" class="form-range" id="gb_tref">
+                </div>
+            </p>
+        </div>
+    </div>
+    
+    <div id="Presets" class="tabcontent">
+        <div class="col py-3 text-white">
+        <h5 class="selected_text">Presets</h5>
+            <p class="lead">
+                <div class="container">
+                    <div class="row">
+                      <div class="col-1" id="preset-order-bank-column">
+                        <div class="row preset-order-bank" style="padding-bottom: -2px;" id="preset-order-bank-0">
+                            <div class="col">
+                                <span>Bank 1</span>
+                            </div>
+                        </div>
+                        <div class="row preset-order-bank" id="preset-order-bank-1">
+                            <div class="col">
+                                <span>Bank 2</span>
+                            </div>
+                        </div>
+                        <div class="row preset-order-bank" id="preset-order-bank-2">
+                            <div class="col">
+                                <span>Bank 3</span>
+                            </div>
+                        </div>
+                        <div class="row preset-order-bank" id="preset-order-bank-3">
+                            <div class="col">
+                                <span>Bank 4</span>
+                            </div>
+                        </div>
+                        <div class="row preset-order-bank" id="preset-order-bank-4">
+                            <div class="col">
+                                <span>Bank 5</span>
+                            </div>
+                        </div>
+                        <div class="row preset-order-bank" id="preset-order-bank-5">
+                            <div class="col">
+                                <span>Bank 6</span>
+                            </div>
+                        </div>
+                        <div class="row preset-order-bank" id="preset-order-bank-6">
+                            <div class="col">
+                                <span>Bank 7</span>
+                            </div>
+                        </div>
+                      </div>
+
+                      <div class="col-10" style="margin-left: 4px">
+                        <div class="row" id="preset-order-0" order_value=0>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="flex-grow-1">1</span>
+                            <button class="btn btn-dark" style="opacity: 0%;" disabled>↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(0)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-1" order_value=1>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">2</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(1)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(1)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-2" order_value=2>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">3</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(2)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(2)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-3" order_value=3>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">4</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(3)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(3)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-4" order_value=4>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">5</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(4)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(4)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-5" order_value=5>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">6</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(5)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(5)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-6" order_value=6>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">7</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(6)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(6)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-7" order_value=7>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">8</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(7)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(7)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-8" order_value=8>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">9</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(8)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(8)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-9" order_value=9>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">10</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(9)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(9)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-10" order_value=10>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">11</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(10)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(10)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-11" order_value=11>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">12</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(11)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(11)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-12" order_value=12>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">13</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(12)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(12)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-13" order_value=13>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">14</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(13)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(13)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-14" order_value=14>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">15</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(14)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(14)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-15" order_value=15>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">16</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(15)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(15)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-16" order_value=16>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">17</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(16)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(16)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-17" order_value=17>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">18</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(17)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(17)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-18" order_value=18>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">19</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(18)">↑</button>
+                            <button class="btn btn-dark" onclick="presetOrderDown(18)">↓</button>
+                          </div>
+                        </div>
+                        <div class="row" id="preset-order-19" order_value=19>
+                          <div class="col d-flex align-items-center preset-order-item">
+                            <span>⬤</span>&nbsp;
+                            <span class="p-0 m-0 flex-grow-1">20</span>
+                            <button class="btn btn-dark" onclick="presetOrderUp(19)">↑</button>
+                            <button class="btn btn-dark" style="opacity: 0%;" disabled>↓</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <div class="container">
+                    <button type="button" onclick="savePresetOrder()" class="btn btn-success">Save preset order</button>
                 </div>
             </p>
         </div>
@@ -2743,7 +3262,7 @@
             <p class="lead">                         
                 <div class="container">
                     <label class="form-check-label" for="intfslay">Preset Switch Layout</label>
-                    <select class="form-select select_style" id="intfslay">
+                    <select class="form-select select_style" id="intfslay" onchange="updatePresetOrderBanks()">
                         <option value="255" class="style6">Disabled</option>
                         <option value="0" class="style6">1x2 Next/Previous</option>
                         <option value="1" class="style6">1x3</option>
@@ -2775,6 +3294,7 @@
                     <div class="container">
                         <label class="form-check-label" for="intfx1cc">Control Change Number</label>
                         <select class="form-select select_style" id="intfx1cc" name="intfx1cc" onchange="extFSChanged('intfx1')">
+                        </select> 
                     </div>
                     <br>
                     <div class="container">
@@ -2808,6 +3328,7 @@
                     <div class="container">
                         <label class="form-check-label" for="intfx2cc">Control Change Number</label>
                         <select class="form-select select_style" id="intfx2cc" name="intfx2cc" onchange="extFSChanged('intfx2')">
+                        </select> 
                     </div>
                     <br>
                     <div class="container">
@@ -2815,6 +3336,7 @@
                         <input type="number" id="intfx2v1" name="intfx2v1" class="form-control text_entry_style" maxlength="3" size="3" value="0" min="0" max="127" oninput="this.nextElementSibling.value = this.value">
                         <input type="range" id="intfx2v1_r" class="form-range" value="0" min="0" max="127" oninput="this.previousElementSibling.value = this.value">
                         <select class="form-select select_style" id="intfx2v1_s" name="intfx2v1_s">
+                        </select> 
                     </div>
                     <br>
                     <div class="container">
@@ -2840,6 +3362,7 @@
                     <div class="container">
                         <label class="form-check-label" for="intfx3cc">Control Change Number</label>
                         <select class="form-select select_style" id="intfx3cc" name="intfx3cc" onchange="extFSChanged('intfx3')">
+                        </select> 
                     </div>
                     <br>
                     <div class="container">
@@ -2847,6 +3370,7 @@
                         <input type="number" id="intfx3v1" name="intfx3v1" class="form-control text_entry_style" maxlength="3" size="3" value="0" min="0" max="127" oninput="this.nextElementSibling.value = this.value">
                         <input type="range" id="intfx3v1_r" class="form-range" value="0" min="0" max="127" oninput="this.previousElementSibling.value = this.value">
                         <select class="form-select select_style" id="intfx3v1_s" name="intfx3v1_s">
+                        </select> 
                     </div>
                     <br>
                     <div class="container">
@@ -2872,6 +3396,7 @@
                     <div class="container">
                         <label class="form-check-label" for="intfx4cc">Control Change Number</label>
                         <select class="form-select select_style" id="intfx4cc" name="intfx4cc" onchange="extFSChanged('intfx4')">
+                        </select> 
                     </div>
                     <br>
                     <div class="container">
@@ -2879,6 +3404,7 @@
                         <input type="number" id="intfx4v1" name="intfx4v1" class="form-control text_entry_style" maxlength="3" size="3" value="0" min="0" max="127" oninput="this.nextElementSibling.value = this.value">
                         <input type="range" id="intfx4v1_r" class="form-range" value="0" min="0" max="127" oninput="this.previousElementSibling.value = this.value">
                         <select class="form-select select_style" id="intfx4v1_s" name="intfx4v1_s">
+                        </select> 
                     </div>
                     <br>
                     <div class="container">
@@ -2887,7 +3413,6 @@
                         <input type="range" id="intfx4v2_r" class="form-range" value="127" min="0" max="127" oninput="this.previousElementSibling.value = this.value">
                         <select class="form-select select_style" id="intfx4v2_s" name="intfx4v2_s">
                         </select>
-
                     </div>
                 </div>
                 <br>
@@ -2905,7 +3430,7 @@
             <p class="lead">     
                 <div class="container">
                     <label class="form-check-label" for="extfslay">Preset Switch Layout</label>
-                    <select class="form-select select_style" id="extfslay">
+                    <select class="form-select select_style" id="extfslay" onchange="updatePresetOrderBanks()">
                         <option value="255" class="style6">Disabled</option>
                         <option value="0" class="style6">1x2 Next/Previous</option>
                         <option value="1" class="style6">1x3</option>
@@ -3195,6 +3720,7 @@
                     <div class="container">
                         <label class="form-check-label" for="extfx6cc">Control Change Number</label>
                         <select class="form-select select_style" id="extfx6cc" name="extfx6cc" onchange="extFSChanged('extfx6')">
+                        </select> 
                     </div>
                     <br>
                     <div class="container">
@@ -3240,6 +3766,7 @@
                     <div class="container">
                         <label class="form-check-label" for="extfx7cc">Control Change Number</label>
                         <select class="form-select select_style" id="extfx7cc" name="extfx7cc" onchange="extFSChanged('extfx7')">
+                        </select> 
                     </div>
                     <br>
                     <div class="container">
@@ -3285,6 +3812,7 @@
                     <div class="container">
                         <label class="form-check-label" for="extfx8cc">Control Change Number</label>
                         <select class="form-select select_style" id="extfx8cc" name="extfx8cc" onchange="extFSChanged('extfx8')">
+                        </select> 
                     </div>
                     <br>
                     <div class="container">
@@ -3381,6 +3909,23 @@
                     </select>                           
                 </div>
                 <br>
+                <div class="container">
+                    <div class="form-check form-switch">
+                       <input class="form-check-input" type="checkbox" role="switch" value="on" id="looparound">
+                       <label class="form-check-label" for="looparound">Preset and Bank switching loop around</label>
+                    </div> 
+                </div>
+                <br>
+                <div class="container">
+                    <label class="form-check-label" for="presetslot">Changing preset saves to slot:</label>
+                    <select class="form-select select_style" id="presetslot">
+                        <option value="0" class="style6" >Current slot</option>
+                        <option value="1" class="style6">Slot A (Dual mode)</option>
+                        <option value="2" class="style6">Slot B (Dual mode)</option>
+                        <option value="3" class="style6" selected>Slot C (Stomp mode)</option>
+                    </select>                           
+                </div>
+                <br>
                 <br>
                 <div class="container">
                     <button type="button" onclick="saveSettings()" class="btn btn-success">Save and Reboot</button>
@@ -3404,5 +3949,26 @@
             </div>
         </div>
     </div>
+
+	    
+    <div class="modal fade" id="value_input_bg">
+        <div class="modal-dialog  modal-dialog-centered modal-sm">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set <label id="value_input_lbl"/>placeholder</label> value:</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p><input type="number" id="value_input_val"/></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="value_input_btn">Save changes</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+
   </body>
 </html>
